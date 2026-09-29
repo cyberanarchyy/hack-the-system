@@ -64,16 +64,150 @@ function load() {
   return { tournaments: [], ui: null };
 }
 
+// Content fingerprint of a tournament, ignoring its save stamp.
+const contentKey = (t) => JSON.stringify({ ...t, savedAt: 0 });
+const seenKeys = new Map();
+
 function save() {
   db.ui = { tid: ui.tid, tab: ui.tab };
+  for (const t of db.tournaments) {
+    const k = contentKey(t);
+    if (seenKeys.get(t.id) !== k) { t.savedAt = Date.now(); seenKeys.set(t.id, k); }
+  }
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(db));
   } catch (e) {
-    toast('Could not save — storage is full or blocked');
+    if (!cloud.col) toast('Could not save — storage is full or blocked');
+  }
+  scheduleSync();
+}
+
+// ---------- account sync ---------------------------------------------------
+// When opened on claude.ai, tournaments are also kept in the viewer's private
+// storage there, so they survive a cleared browser and follow them to other devices.
+
+const cloud = { col: null, synced: new Map(), timer: 0, busy: false, again: false };
+
+async function initCloud() {
+  if (!window.claude?.use) return;
+  try {
+    const [store, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    const id = store && user ? await user.id() : null;
+    if (!id) return;
+    const col = store.collection('data/users/' + id);
+    const snap = await col.get();
+    for (const d of snap.docs) {
+      const remote = d.data()?.t;
+      if (!remote || !remote.id || !Array.isArray(remote.players)) continue;
+      const t = JSON.parse(JSON.stringify(remote));
+      const i = db.tournaments.findIndex((x) => x.id === t.id);
+      if (i < 0) db.tournaments.push(t);
+      else if ((t.savedAt || 0) > (db.tournaments[i].savedAt || 0)) db.tournaments[i] = t;
+      cloud.synced.set(t.id, contentKey(t));
+      seenKeys.set(t.id, contentKey(db.tournaments[i < 0 ? db.tournaments.length - 1 : i]));
+    }
+    cloud.col = col;
+    if (ui.tid && !T()) ui.tid = null;
+    save(); // uploads anything only this device had
+    if (!ui.modal && !dialog) render();
+  } catch (e) {
+    cloud.col = null;
   }
 }
 
+function scheduleSync(delay = 800) {
+  if (!cloud.col) return;
+  clearTimeout(cloud.timer);
+  cloud.timer = setTimeout(flushSync, delay);
+}
+
+async function flushSync() {
+  if (!cloud.col) return;
+  if (cloud.busy) { cloud.again = true; return; }
+  cloud.busy = true;
+  try {
+    for (const t of db.tournaments) {
+      const k = contentKey(t);
+      if (cloud.synced.get(t.id) === k) continue;
+      await cloud.col.doc(t.id).set({ t: JSON.parse(JSON.stringify(t)), savedAt: t.savedAt || Date.now() });
+      cloud.synced.set(t.id, k);
+    }
+    for (const id of [...cloud.synced.keys()]) {
+      if (db.tournaments.some((t) => t.id === id)) continue;
+      await cloud.col.doc(id).delete();
+      cloud.synced.delete(id);
+    }
+  } catch (e) {
+    if (e?.code === 'quota_exceeded') toast('Account storage is full. Delete old tournaments to keep syncing.');
+    else if (e?.code === 'unavailable' || e?.code === 'resource_exhausted') cloud.again = true;
+    else { cloud.col = null; toast('Syncing stopped. Tournaments are still saved on this device.'); }
+  } finally {
+    cloud.busy = false;
+    if (cloud.again) { cloud.again = false; scheduleSync(5000); }
+  }
+}
+
+// ---------- in-page dialogs ------------------------------------------------
+// Used instead of confirm()/prompt(), which embedded pages may not show.
+
+let dialog = null;
+
+function openDialog(d) {
+  dialog = d;
+  render();
+  setTimeout(() => { $('#dialog-input')?.select(); $('#dialog-text')?.select(); }, 50);
+}
+
+function renderDialog() {
+  const d = dialog;
+  return `
+  <div class="modal-bg" data-act="dlg-cancel">
+    <div class="sheet" role="dialog" aria-label="${esc(d.title)}">
+      <h3>${esc(d.title)}</h3>
+      ${d.message ? `<p class="center" style="margin:14px 0 18px">${esc(d.message)}</p>` : ''}
+      ${d.input != null ? `<form data-form="dlg"><input id="dialog-input" name="v" maxlength="40" value="${esc(d.input)}" autocomplete="off" aria-label="${esc(d.title)}" style="margin:14px 0 16px"></form>` : ''}
+      ${d.text != null ? `<p class="hint center">Select all and copy this text.</p><textarea id="dialog-text" readonly style="margin:10px 0 16px">${esc(d.text)}</textarea>` : ''}
+      <div class="btns">
+        ${d.onOk ? `<button class="btn ${d.danger ? 'danger' : 'primary'}" data-act="dlg-ok">${esc(d.okLabel || 'OK')}</button>` : ''}
+        <button class="btn" data-act="dlg-cancel">${d.onOk ? 'Cancel' : 'Close'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/** Share sheet on a phone browser; copy to clipboard where sharing isn't allowed. */
+async function shareOrCopy(text, what) {
+  const embedded = window.top !== window;
+  if (!embedded && navigator.share) {
+    try { await navigator.share({ text }); return; } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(`${what} copied. Paste it anywhere.`);
+  } catch (e) {
+    openDialog({ title: what, text });
+  }
+}
+
+function importTournament(t) {
+  if (!t || !Array.isArray(t.players) || !Array.isArray(t.rounds) || !t.name) throw new Error('bad file');
+  t.timer = t.timer || freshTimer(t.roundMinutes || 50);
+  t.timer.running = false;
+  const add = () => {
+    db.tournaments.push(t);
+    go({ screen: 'tournament', tid: t.id, tab: 'standings' });
+    toast('Tournament imported');
+  };
+  if (db.tournaments.some((x) => x.id === t.id)) {
+    openDialog({
+      title: 'Already here', message: `“${t.name}” is already on this device. Import it as a copy?`, okLabel: 'Import copy',
+      onOk: () => { t.id = uid(); t.name += ' (copy)'; add(); },
+    });
+  } else add();
+}
+
 let db = load();
+for (const t of db.tournaments) seenKeys.set(t.id, contentKey(t));
 let ui = { screen: 'home', tid: null, tab: 'players', roundIdx: null, modal: null };
 if (db.ui && db.tournaments.some((t) => t.id === db.ui.tid)) {
   ui.screen = 'tournament';
@@ -434,6 +568,7 @@ function render() {
     ui.tid = null;
     app.innerHTML = renderHome();
   }
+  if (dialog) app.insertAdjacentHTML('beforeend', renderDialog());
   tick();
 }
 
@@ -478,7 +613,14 @@ function renderHome() {
       Import tournament file
       <input type="file" accept="application/json,.json" data-import class="sr-only">
     </label>
-    <p class="hint center">Data is saved on this device only. Use Export in a tournament's settings to back it up.</p>
+    <details>
+      <summary>Paste a copied backup</summary>
+      <form data-form="import-text" style="margin-top:10px">
+        <textarea name="json" id="import-json" placeholder="Paste backup text here"></textarea>
+        <button class="btn block" style="margin-top:8px">Import</button>
+      </form>
+    </details>
+    <p class="hint center">${cloud.col ? 'Tournaments are saved to your Claude account and on this device.' : 'Tournaments are saved on this device. Use Settings → Export to back one up.'}</p>
   </main>`;
 }
 
@@ -789,6 +931,7 @@ function renderSettings(t) {
     <div class="card stack">
       <h2>Data</h2>
       <button class="btn block" data-act="export">Export tournament (.json)</button>
+      <button class="btn block" data-act="copy-backup">Copy backup text</button>
       <button class="btn danger block" data-act="delete-t">Delete tournament</button>
     </div>`;
 }
@@ -859,12 +1002,18 @@ const actions = {
     const lb = computeLeaderboard(ui.lbGame);
     const text = [`Season leaderboard${ui.lbGame ? ' — ' + ui.lbGame : ''}`,
       ...lb.map((e, i) => `${i + 1}. ${e.name} — ${e.pts} pts, ${e.w}-${e.l}-${e.d}, ${e.events} event${e.events === 1 ? '' : 's'}${e.titles ? ', 🏆×' + e.titles : ''}`)].join('\n');
-    try {
-      if (navigator.share) await navigator.share({ text });
-      else { await navigator.clipboard.writeText(text); toast('Leaderboard copied'); }
-    } catch (err) {
-      if (err.name !== 'AbortError') toast('Could not share');
-    }
+    await shareOrCopy(text, 'Leaderboard');
+  },
+  'dlg-ok': () => {
+    const d = dialog;
+    const value = $('#dialog-input')?.value;
+    dialog = null;
+    d.onOk(value);
+    render();
+  },
+  'dlg-cancel': (el, e) => {
+    if (el.classList.contains('modal-bg') && e.target !== el) return;
+    dialog = null; render();
   },
   'open-t': (el) => {
     const t = db.tournaments.find((x) => x.id === el.dataset.id);
@@ -875,8 +1024,10 @@ const actions = {
 
   rename: (el) => {
     const t = T(), p = playerById(t, el.dataset.id);
-    const name = prompt('Rename player', p.name);
-    if (name && name.trim()) { p.name = name.trim().slice(0, 40); save(); render(); }
+    openDialog({
+      title: 'Rename player', input: p.name, okLabel: 'Save',
+      onOk: (name) => { if (name && name.trim()) { p.name = name.trim().slice(0, 40); save(); } },
+    });
   },
   drop: (el) => {
     const p = playerById(T(), el.dataset.id);
@@ -913,11 +1064,15 @@ const actions = {
   reopen: () => { const t = T(); t.phase = 'running'; save(); render(); },
   'delete-round': () => {
     const t = T();
-    if (!confirm(`Delete ${roundLabel(lastRound(t))} and all its results?`)) return;
-    t.rounds.pop();
-    if (!t.rounds.length) t.phase = 'setup';
-    startNewRoundTimer(t);
-    go({ roundIdx: null, tab: t.rounds.length ? 'round' : 'players' });
+    openDialog({
+      title: 'Delete round', message: `Delete ${roundLabel(lastRound(t))} and all its results?`, okLabel: 'Delete round', danger: true,
+      onOk: () => {
+        t.rounds.pop();
+        if (!t.rounds.length) t.phase = 'setup';
+        startNewRoundTimer(t);
+        go({ roundIdx: null, tab: t.rounds.length ? 'round' : 'players' });
+      },
+    });
   },
 
   'open-match': (el) => {
@@ -945,37 +1100,52 @@ const actions = {
   'timer-adj': (el) => { timerAdjust(T(), +el.dataset.ms); tick(); },
   'timer-reset': () => {
     const t = T();
-    if (!confirm('Reset the round timer?')) return;
-    startNewRoundTimer(t); save(); render(); syncWakeLock();
+    openDialog({
+      title: 'Reset timer', message: `Set the clock back to ${t.roundMinutes}:00?`, okLabel: 'Reset', danger: true,
+      onOk: () => { startNewRoundTimer(t); save(); syncWakeLock(); },
+    });
   },
 
   share: async () => {
-    const text = shareText(T());
-    try {
-      if (navigator.share) await navigator.share({ text });
-      else { await navigator.clipboard.writeText(text); toast('Standings copied'); }
-    } catch (e) {
-      if (e.name !== 'AbortError') toast('Could not share');
-    }
+    await shareOrCopy(shareText(T()), 'Standings');
   },
-  export: () => {
+  export: async () => {
     const t = T();
-    const blob = new Blob([JSON.stringify(t, null, 2)], { type: 'application/json' });
+    const json = JSON.stringify(t, null, 2);
+    const filename = `${t.name.replace(/[^\w-]+/g, '_') || 'tournament'}.json`;
+    const downloads = window.claude?.use ? await window.claude.use('downloads') : null;
+    if (downloads) {
+      try { await downloads.save({ filename, data: json }); } catch (e) {
+        if (e?.code !== 'declined') toast('Could not save the file. Use Copy backup text instead.');
+      }
+      return;
+    }
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `${t.name.replace(/[^\w-]+/g, '_') || 'tournament'}.json`;
+    a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    a.download = filename;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   },
+  'copy-backup': async () => {
+    await shareOrCopy(JSON.stringify(T()), 'Backup');
+  },
   'delete-t': () => {
     const t = T();
-    if (!confirm(`Delete “${t.name}”? This cannot be undone.`)) return;
-    db.tournaments = db.tournaments.filter((x) => x.id !== t.id);
-    go({ screen: 'home', tid: null });
+    openDialog({
+      title: 'Delete tournament', message: `Delete “${t.name}” and all its results? This cannot be undone.`, okLabel: 'Delete', danger: true,
+      onOk: () => {
+        db.tournaments = db.tournaments.filter((x) => x.id !== t.id);
+        go({ screen: 'home', tid: null });
+      },
+    });
   },
 };
 
 const forms = {
+  dlg: () => actions['dlg-ok'](),
+  'import-text': (f) => {
+    try { importTournament(JSON.parse(f.json.value)); } catch (err) { toast('That text is not a tournament backup'); }
+  },
   'new-t': (f) => {
     const t = newTournament({
       name: f.name.value.trim(),
@@ -1060,31 +1230,21 @@ document.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   try {
-    const t = JSON.parse(await file.text());
-    if (!t || !Array.isArray(t.players) || !Array.isArray(t.rounds) || !t.name) throw new Error('bad file');
-    t.timer = t.timer || freshTimer(t.roundMinutes || 50);
-    t.timer.running = false;
-    if (db.tournaments.some((x) => x.id === t.id)) {
-      if (!confirm(`“${t.name}” already exists here. Import as a copy?`)) return;
-      t.id = uid();
-      t.name += ' (copy)';
-    }
-    db.tournaments.push(t);
-    go({ screen: 'tournament', tid: t.id, tab: 'standings' });
-    toast('Tournament imported');
+    importTournament(JSON.parse(await file.text()));
   } catch (err) {
     toast('That file is not a valid tournament export');
   }
 });
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && (ui.modal || ui.lbPlayer)) { ui.modal = null; ui.lbPlayer = null; render(); }
+  if (e.key === 'Escape' && (ui.modal || ui.lbPlayer || dialog)) { ui.modal = null; ui.lbPlayer = null; dialog = null; render(); }
 });
 
 // ---------- boot -----------------------------------------------------------
 
 render();
 syncWakeLock();
+initCloud();
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js').catch(() => { /* offline support unavailable */ });
