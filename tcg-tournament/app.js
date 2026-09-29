@@ -262,6 +262,66 @@ function champion(t) {
   return computeStandings(t)[0]?.id ?? null;
 }
 
+// ---------- season leaderboard --------------------------------------------
+
+const nameKey = (name) => name.trim().toLowerCase();
+const gamesPlayed = () => [...new Set(db.tournaments.map((t) => t.game || '').filter(Boolean))].sort();
+
+/** Combine every started tournament into one ranking. Players are matched across events by name. */
+function computeLeaderboard(game) {
+  const L = new Map();
+  const tours = db.tournaments
+    .filter((t) => t.rounds.length && (!game || (t.game || '') === game))
+    .sort((a, b) => a.created - b.created);
+
+  for (const t of tours) {
+    const rec = new Map(t.players.map((p) => [p.id, { w: 0, l: 0, d: 0 }]));
+    for (const r of t.rounds) {
+      for (const m of r.matches) {
+        if (!m.done) continue;
+        const a = rec.get(m.p1);
+        if (!m.p2) { if (a) a.w++; continue; }
+        const b = rec.get(m.p2);
+        if (!a || !b) continue;
+        const w = winnerOf(m);
+        if (w === m.p1) { a.w++; b.l++; } else if (w === m.p2) { b.w++; a.l++; } else { a.d++; b.d++; }
+      }
+    }
+    const top = t.rounds.find((r) => r.type === 'top');
+    const cut = new Set(top ? top.matches.flatMap((m) => [m.p1, m.p2]) : []);
+    const champ = champion(t);
+    const standings = computeStandings(t);
+
+    standings.forEach((s, i) => {
+      const r = rec.get(s.id);
+      if (!r || r.w + r.l + r.d === 0) return; // registered but never played
+      const k = nameKey(s.name);
+      if (!L.has(k)) L.set(k, { key: k, name: s.name, events: 0, w: 0, l: 0, d: 0, pts: 0, titles: 0, cuts: 0, history: [] });
+      const e = L.get(k);
+      e.name = s.name; // latest spelling wins
+      e.events++;
+      e.w += r.w; e.l += r.l; e.d += r.d;
+      e.pts += WIN_PTS * r.w + DRAW_PTS * r.d;
+      if (s.id === champ) e.titles++;
+      if (cut.has(s.id)) e.cuts++;
+      e.history.push({
+        tid: t.id, name: t.name, date: t.created, rank: i + 1, of: standings.length,
+        rec: r, champ: s.id === champ, cut: cut.has(s.id) ? top.matches.length * 2 : 0, done: t.phase === 'done',
+      });
+    });
+  }
+
+  const list = [...L.values()];
+  for (const e of list) e.winPct = e.w / Math.max(1, e.w + e.l + e.d);
+  const sorters = {
+    pts: (a, b) => b.pts - a.pts || b.titles - a.titles || b.winPct - a.winPct,
+    titles: (a, b) => b.titles - a.titles || b.cuts - a.cuts || b.pts - a.pts,
+    winPct: (a, b) => b.winPct - a.winPct || b.pts - a.pts,
+    events: (a, b) => b.events - a.events || b.pts - a.pts,
+  };
+  return list.sort((a, b) => sorters[ui.lbSort || 'pts'](a, b) || a.name.localeCompare(b.name));
+}
+
 // ---------- timer ----------------------------------------------------------
 
 const timerRemaining = (t) => (t.timer.running ? t.timer.endsAt - Date.now() : t.timer.remaining);
@@ -367,6 +427,8 @@ function render() {
   if (ui.screen === 'tournament' && t) {
     app.innerHTML = renderTournament(t) + (ui.modal ? renderModal(t) : '');
     $('.chip.on')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  } else if (ui.screen === 'leaderboard') {
+    app.innerHTML = renderLeaderboard();
   } else {
     ui.screen = 'home';
     ui.tid = null;
@@ -391,7 +453,8 @@ function renderHome() {
   return `
   <header class="bar"><h1><span class="brand">▲</span> TCG Tournament</h1></header>
   <main class="wrap" style="padding-bottom:32px">
-    ${list ? `<h2 style="margin-bottom:10px">Your tournaments</h2>${list}` : ''}
+    ${list ? `<button class="btn primary block" data-act="leaderboard" style="margin-bottom:20px">🏆 Season leaderboard</button>
+    <h2 style="margin-bottom:10px">Your tournaments</h2>${list}` : ''}
     <form class="card" data-form="new-t" style="margin-top:${list ? 20 : 0}px">
       <h2>New tournament</h2>
       <label>Name<input name="name" required maxlength="60" placeholder="Friday Night Locals" autocomplete="off"></label>
@@ -417,6 +480,101 @@ function renderHome() {
     </label>
     <p class="hint center">Data is saved on this device only. Use Export in a tournament's settings to back it up.</p>
   </main>`;
+}
+
+function renderLeaderboard() {
+  const games = gamesPlayed();
+  if (ui.lbGame && !games.includes(ui.lbGame)) ui.lbGame = '';
+  const lb = computeLeaderboard(ui.lbGame);
+  const sort = ui.lbSort || 'pts';
+  const events = db.tournaments.filter((t) => t.rounds.length && (!ui.lbGame || t.game === ui.lbGame)).length;
+
+  const sorts = [['pts', 'Points'], ['titles', 'Titles'], ['winPct', 'Win %'], ['events', 'Events']];
+  const chips = sorts.map(([k, label]) => `<button class="chip ${k === sort ? 'on' : ''}" data-act="lb-sort" data-k="${k}">${label}</button>`).join('');
+  const gameSelect = games.length > 1 ? `
+    <select data-lb-game aria-label="Filter by game" style="margin:0 0 12px">
+      <option value="">All games</option>
+      ${games.map((g) => `<option value="${esc(g)}"${g === ui.lbGame ? ' selected' : ''}>${esc(g)}</option>`).join('')}
+    </select>` : '';
+
+  const medal = ['🥇', '🥈', '🥉'];
+  const podium = lb.length >= 3 ? `
+    <div class="podium">
+      ${[1, 0, 2].map((i) => `
+        <button class="step s${i + 1}" data-act="lb-player" data-k="${esc(lb[i].key)}">
+          <span class="medal">${medal[i]}</span>
+          <strong>${esc(lb[i].name)}</strong>
+          <span>${sortValue(lb[i], sort)}</span>
+          <div class="block-bar"></div>
+        </button>`).join('')}
+    </div>` : '';
+
+  const rows = lb.map((e, i) => `
+    <tr data-act="lb-player" data-k="${esc(e.key)}" class="tap">
+      <td>${i + 1}</td>
+      <td>${esc(e.name)}${e.titles ? ` <span class="titles">🏆${e.titles > 1 ? '×' + e.titles : ''}</span>` : ''}</td>
+      <td>${e.events}</td>
+      <td>${e.w}-${e.l}-${e.d}</td>
+      <td>${pct(e.winPct)}</td>
+      <td class="pts">${e.pts}</td>
+    </tr>`).join('');
+
+  const body = lb.length ? `
+    ${podium}
+    <div class="card">
+      <h2>${lb.length} players <span class="muted" style="font-size:.8rem;font-weight:400">· ${events} event${events === 1 ? '' : 's'}</span></h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Player</th><th>Ev</th><th>W-L-D</th><th>Win%</th><th>Pts</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+      <p class="hint">Points: 3 per match win, 1 per draw, across every event (Swiss and top cut). Tap a player for their history. Players are matched by name, so spell names the same way each event.</p>
+    </div>
+    <button class="btn block" data-act="lb-share">Share leaderboard</button>`
+    : '<p class="empty">No results yet.<br>Play a round in any tournament and it shows up here.</p>';
+
+  return `
+  <header class="bar">
+    <button class="icon-btn" data-act="home" aria-label="Back">${ICON.back}</button>
+    <h1>Season leaderboard<small>${ui.lbGame ? esc(ui.lbGame) : 'All tournaments'}</small></h1>
+  </header>
+  <main class="wrap" style="padding-bottom:32px">
+    ${gameSelect}
+    <div class="chips">${chips}</div>
+    ${body}
+  </main>
+  ${ui.lbPlayer ? renderPlayerHistory(lb.find((e) => e.key === ui.lbPlayer)) : ''}`;
+}
+
+function sortValue(e, sort) {
+  if (sort === 'titles') return `${e.titles} title${e.titles === 1 ? '' : 's'}`;
+  if (sort === 'winPct') return pct(e.winPct) + '%';
+  if (sort === 'events') return `${e.events} event${e.events === 1 ? '' : 's'}`;
+  return `${e.pts} pts`;
+}
+
+function renderPlayerHistory(e) {
+  if (!e) { ui.lbPlayer = null; return ''; }
+  const ord = (n) => n + (['th', 'st', 'nd', 'rd'][(n % 100 - 20) % 10] || ['th', 'st', 'nd', 'rd'][n % 100] || 'th');
+  const rows = [...e.history].reverse().map((h) => `
+    <li>
+      <span class="name" style="cursor:default">${esc(h.name)}<small class="muted" style="display:block;font-size:.75rem">${new Date(h.date).toLocaleDateString()} · ${h.rec.w}-${h.rec.l}-${h.rec.d}</small></span>
+      <span class="badge ${h.champ ? 'done' : h.cut ? 'live' : ''}">${h.champ ? '🏆 CHAMPION' : h.cut ? 'TOP ' + h.cut : (h.done ? '' : 'LIVE · ') + ord(h.rank) + ' / ' + h.of}</span>
+    </li>`).join('');
+  return `
+  <div class="modal-bg" data-act="lb-close">
+    <div class="sheet" role="dialog" aria-label="${esc(e.name)} history">
+      <h3>Player history</h3>
+      <div style="text-align:center;margin:8px 0 14px"><strong style="font-size:1.3rem">${esc(e.name)}</strong></div>
+      <div class="stat-row">
+        <div><strong>${e.pts}</strong><span>Points</span></div>
+        <div><strong>${e.w}-${e.l}-${e.d}</strong><span>Record</span></div>
+        <div><strong>${pct(e.winPct)}%</strong><span>Win rate</span></div>
+        <div><strong>${e.titles}</strong><span>Titles</span></div>
+      </div>
+      <ul class="list">${rows}</ul>
+      <button class="btn block" data-act="lb-close" style="margin-top:12px">Close</button>
+    </div>
+  </div>`;
 }
 
 function renderTournament(t) {
@@ -464,7 +622,8 @@ function renderPlayers(t) {
     <div class="card">
       <h2>Players <span class="badge">${active}${active !== t.players.length ? ' / ' + t.players.length : ''}</span></h2>
       <form class="add-row" data-form="add-player" style="margin-top:12px">
-        <input id="player-input" name="name" placeholder="Add player name" maxlength="40" autocomplete="off" enterkeyhint="done" aria-label="Player name">
+        <input id="player-input" name="name" list="known-players" placeholder="Add player name" maxlength="40" autocomplete="off" enterkeyhint="done" aria-label="Player name">
+        <datalist id="known-players">${knownPlayers(t).map((n) => `<option value="${esc(n)}">`).join('')}</datalist>
         <button class="btn primary">Add</button>
       </form>
       <details>
@@ -477,6 +636,14 @@ function renderPlayers(t) {
       ${started ? '<p class="hint">Players added now join from the next round. Dropped players won’t be paired again.</p>' : ''}
       ${rows ? `<ul class="list" style="margin-top:8px">${rows}</ul>` : '<p class="empty">No players yet</p>'}
     </div>`;
+}
+
+/** Names from other tournaments, so returning players keep the same spelling for the leaderboard. */
+function knownPlayers(t) {
+  const here = new Set(t.players.map((p) => nameKey(p.name)));
+  const seen = new Map();
+  for (const x of db.tournaments) for (const p of x.players) if (!here.has(nameKey(p.name))) seen.set(nameKey(p.name), p.name);
+  return [...seen.values()].sort((a, b) => a.localeCompare(b));
 }
 
 function renderRound(t) {
@@ -680,7 +847,25 @@ function shareText(t) {
 }
 
 const actions = {
-  home: () => go({ screen: 'home', tid: null, modal: null }),
+  home: () => go({ screen: 'home', tid: null, modal: null, lbPlayer: null }),
+  leaderboard: () => go({ screen: 'leaderboard', tid: null, modal: null, lbPlayer: null }),
+  'lb-sort': (el) => { ui.lbSort = el.dataset.k; render(); },
+  'lb-player': (el) => { ui.lbPlayer = el.dataset.k; render(); },
+  'lb-close': (el, e) => {
+    if (el.classList.contains('modal-bg') && e.target !== el) return;
+    ui.lbPlayer = null; render();
+  },
+  'lb-share': async () => {
+    const lb = computeLeaderboard(ui.lbGame);
+    const text = [`Season leaderboard${ui.lbGame ? ' — ' + ui.lbGame : ''}`,
+      ...lb.map((e, i) => `${i + 1}. ${e.name} — ${e.pts} pts, ${e.w}-${e.l}-${e.d}, ${e.events} event${e.events === 1 ? '' : 's'}${e.titles ? ', 🏆×' + e.titles : ''}`)].join('\n');
+    try {
+      if (navigator.share) await navigator.share({ text });
+      else { await navigator.clipboard.writeText(text); toast('Leaderboard copied'); }
+    } catch (err) {
+      if (err.name !== 'AbortError') toast('Could not share');
+    }
+  },
   'open-t': (el) => {
     const t = db.tournaments.find((x) => x.id === el.dataset.id);
     go({ screen: 'tournament', tid: t.id, tab: t.phase === 'setup' ? 'players' : 'round', roundIdx: null, modal: null });
@@ -870,6 +1055,7 @@ document.addEventListener('input', (e) => {
 });
 
 document.addEventListener('change', async (e) => {
+  if (e.target.matches('[data-lb-game]')) { ui.lbGame = e.target.value; render(); return; }
   if (!e.target.matches('[data-import]')) return;
   const file = e.target.files[0];
   if (!file) return;
@@ -892,7 +1078,7 @@ document.addEventListener('change', async (e) => {
 });
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && ui.modal) { ui.modal = null; render(); }
+  if (e.key === 'Escape' && (ui.modal || ui.lbPlayer)) { ui.modal = null; ui.lbPlayer = null; render(); }
 });
 
 // ---------- boot -----------------------------------------------------------

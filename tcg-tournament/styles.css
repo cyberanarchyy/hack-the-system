@@ -178,6 +178,27 @@ tr.cut td { border-bottom: 2px dashed var(--accent); }
 tr.dropped td:nth-child(2) { color: var(--muted); text-decoration: line-through; }
 td.pts { font-weight: 800; }
 
+/* ---------- leaderboard ---------- */
+tr.tap { cursor: pointer; }
+tr.tap:active td { background: var(--panel-2); }
+.titles { font-size: .8rem; white-space: nowrap; }
+.podium { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: end; gap: 8px; margin-bottom: 16px; }
+.podium .step {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0;
+  background: none; border: 0; padding: 0; cursor: pointer; text-align: center;
+}
+.podium .medal { font-size: 1.8rem; }
+.podium strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.podium .step > span:not(.medal) { color: var(--muted); font-size: .8rem; }
+.podium .block-bar { width: 100%; margin-top: 6px; border-radius: 10px 10px 0 0; background: var(--panel-2); border: 1px solid var(--line); border-bottom: 0; }
+.podium .s1 .block-bar { height: 96px; background: linear-gradient(180deg, #3a0a26, var(--panel)); border-color: var(--accent); }
+.podium .s2 .block-bar { height: 68px; }
+.podium .s3 .block-bar { height: 48px; }
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+.stat-row div { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 4px; text-align: center; }
+.stat-row strong { display: block; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.stat-row span { font-size: .7rem; color: var(--muted); }
+
 /* ---------- timer tab ---------- */
 .big-timer { text-align: center; padding: 24px 0 8px; }
 .big-timer .label { color: var(--muted); font-weight: 600; }

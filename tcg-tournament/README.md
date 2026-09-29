@@ -11,6 +11,7 @@ No account, no server, and it works offline. Install it on your home screen like
 - **Results**: tap a match to enter 2-0, 2-1, 1-0, draws, and so on. Bo1, Bo3, and Bo5 are supported.
 - **Standings**: 3 points for a win, 1 for a draw. Tiebreakers are OMW%, GW%, and OGW% with a 33% floor.
 - **Top cut**: single elimination for Top 2/4/8/16/32, seeded so 1st and 2nd can only meet in the finals.
+- **Season leaderboard**: combines every tournament into one ranking, with a top 3 podium. Sort by points, titles, win %, or events played, and filter by game. Tap a player to see each event they played: record, placing, top cut, and titles. Players are matched by name, and names from earlier events are suggested when you register so they stay consistent.
 - **Share standings** through your phone's share sheet, and **export/import** a tournament as a `.json` backup.
 - Automatic number of Swiss rounds (based on player count), or choose your own.
 
