@@ -4,6 +4,8 @@
 
 Search a username across **34 platforms** simultaneously including Instagram, GitHub, TikTok, Reddit, Twitch, Steam, Spotify, LinkedIn, and more.
 
+> **Also in this repo:** [`tcg-tournament/`](tcg-tournament/) — a mobile TCG tournament app (Swiss pairings, round timer, standings, top cut).
+
 ---
 
 ## Install (macOS)
