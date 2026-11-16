@@ -4,7 +4,9 @@
 
 Search a username across **34 platforms** simultaneously including Instagram, GitHub, TikTok, Reddit, Twitch, Steam, Spotify, LinkedIn, and more.
 
-> **Also in this repo:** [`tcg-tournament/`](tcg-tournament/) — a mobile TCG tournament app (Swiss pairings, round timer, standings, top cut).
+> **Also in this repo:**
+> - [`tcg-tournament/`](tcg-tournament/) — a mobile TCG tournament app (Swiss pairings, round timer, standings, top cut).
+> - [`clip-heist/`](clip-heist/) — a mobile app that turns GTA 6 gameplay into YouTube Shorts (auto highlights, vertical reframing, captions, effects, export).
 
 ---
 
