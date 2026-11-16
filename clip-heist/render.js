@@ -151,6 +151,19 @@ const Render = (() => {
     // Caption that only shows from the peak onwards (the "payoff" line).
     if (tx.payoff && (clip.peak == null || t >= clip.peak)) drawText(ctx, k, tx.payoff, tx.payoffStyle || tx.style, tx.size * 0.85, tx.payoffY ?? 0.72, W, H);
 
+    // Timed captions (subtitles), with a quick "pop" as each one appears.
+    const caps = clip.captions || [];
+    for (const cap of caps) {
+      if (t < cap.start || t >= cap.end || !cap.text) continue;
+      const cy = H * (tx.capY ?? 0.6);
+      const pop = tx.capPop === false ? 1 : 0.82 + 0.18 * Math.min(1, (t - cap.start) / 0.12);
+      ctx.save();
+      ctx.translate(W / 2, cy); ctx.scale(pop, pop); ctx.translate(-W / 2, -cy);
+      drawText(ctx, k, tx.capUpper === false ? cap.text : cap.text.toUpperCase(), tx.capStyle || 'classic', tx.capSize || 66, tx.capY ?? 0.6, W, H);
+      ctx.restore();
+      break;
+    }
+
     if (tx.handle) {
       ctx.save();
       ctx.font = `800 ${Math.round(38 * k)}px system-ui, sans-serif`;
@@ -238,7 +251,7 @@ const Render = (() => {
     };
     try {
       video.src = url;
-      await new Promise((res, rej) => { video.onloadeddata = res; video.onerror = () => rej(new Error('Couldn’t load the source video.')); });
+      await Analyzer.whenReady(video, clip.in);
       const tracks = [];
       const vStream = canvas.captureStream(fps);
       tracks.push(...vStream.getVideoTracks());

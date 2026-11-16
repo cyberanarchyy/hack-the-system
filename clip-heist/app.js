@@ -107,7 +107,7 @@
     hashtags: '#GTA6 #GTAVI #ViceCity #GTA6Gameplay #Gaming #Shorts',
     template: {
       frame: { layout: 'fill', zoom: 1, panX: 0.5, panY: 0.5 },
-      text: { style: 'classic', size: 86, y: 0.17, payoffStyle: 'gold', payoffY: 0.7 },
+      text: { style: 'classic', size: 86, y: 0.17, payoffStyle: 'gold', payoffY: 0.72, capStyle: 'boxed', capSize: 66, capY: 0.6, capPop: true, capUpper: true },
       fx: { punch: true, slowmo: false, shake: false, flash: false, progress: true },
       speed: 1, autoHook: true,
     },
@@ -236,15 +236,21 @@
   async function scanSource(s) {
     scanning[s.id] = { p: 0, msg: 'Starting…' };
     s.status = 'scanning';
+    // If the page died mid-scan (usually the phone running out of memory on a big file),
+    // retry without the memory-hungry sound analysis, and give up after a few tries.
+    s.scanAttempts = (s.scanAttempts || 0) + 1;
+    await saveSource(s);
     refreshScanUI(s);
     try {
+      if (s.scanAttempts > 3) throw new Error('This video keeps crashing the scan. Trim it to under 10 minutes in Photos and import it again.');
       const blob = await DB.get('blobs', 'src:' + s.id);
+      if (!blob) throw new Error('Video file is missing. Import it again.');
       let last = 0;
-      const res = await Analyzer.run(blob, settings, (p, msg) => {
+      const res = await Analyzer.run(blob, { ...settings, skipAudio: s.scanAttempts > 1 }, (p, msg) => {
         scanning[s.id] = { p, msg };
         if (performance.now() - last > 250) { last = performance.now(); refreshScanUI(s); }
       });
-      Object.assign(s, res, { status: 'ready', error: null });
+      Object.assign(s, res, { status: 'ready', error: null, scanAttempts: 0 });
       if (!res.audioAnalyzed) s.note = 'Sound couldn’t be analyzed, so highlights are based on the picture only.';
       else s.note = null;
     } catch (e) {
@@ -369,6 +375,7 @@
       frame: structuredClone(tpl.frame),
       text: { ...structuredClone(tpl.text), hook: tpl.autoHook ? suggestHook(highlight && highlight.tags) : '', payoff: '', handle: settings.handle },
       fx: structuredClone(tpl.fx),
+      captions: [],
       post: { title: '', description: '' },
       thumb: highlight ? highlight.thumb : s.thumb,
       exported: null,
@@ -464,13 +471,15 @@
     ed = null;
   }
 
-  const TABS = [['trim', 'Trim'], ['frame', 'Frame'], ['text', 'Text'], ['fx', 'Effects'], ['post', 'Upload']];
+  const TABS = [['trim', 'Trim'], ['frame', 'Frame'], ['text', 'Text'], ['caps', 'Captions'], ['fx', 'FX'], ['post', 'Post']];
 
   async function renderEditor() {
     const clip = clips.find((c) => c.id === view.id);
     if (!clip) return go('clips');
     const s = sources.find((x) => x.id === clip.sourceId);
     if (!s) return go('clips');
+    clip.captions = clip.captions || [];
+    clip.text = { ...DEFAULT_SETTINGS.template.text, ...clip.text };
     app.innerHTML = `
       <header class="bar">
         <button class="icon-btn" data-act="editor-back" aria-label="Back">${ICON.back}</button>
@@ -503,10 +512,9 @@
     ed = { clip, source: s, video, canvas, ctx: canvas.getContext('2d'), tab: 'trim', guides: false, raf: 0, playing: false, saveTimer: null };
     try { video.src = await sourceUrl(s.id); } catch (e) { toast(e.message); return; }
     if (!ed || ed.video !== video) return; // navigated away while loading
-    await new Promise((r) => { if (video.readyState >= 2) r(); else video.addEventListener('loadeddata', r, { once: true }); });
+    try { await Analyzer.whenReady(video, clip.in); } catch (e) { toast(e.message); return; }
     if (!ed || ed.video !== video) return;
     if (!s.duration) s.duration = video.duration;
-    video.currentTime = clip.in;
     video.addEventListener('seeked', () => { if (!ed.playing) drawPreview(); });
 
     ed.ro = new ResizeObserver(() => drawTimeline());
@@ -538,6 +546,7 @@
     if (!ed) return;
     const { ctx, canvas, video, clip } = ed;
     Render.draw(ctx, canvas.width, canvas.height, video, clip, video.currentTime, { guides: ed.guides });
+    if (ed.tab === 'caps' && !ed.playing) { const b = document.querySelector('[data-act="cap-add"]'); if (b) b.textContent = '＋ Caption at ' + fmt(video.currentTime - clip.in, true); }
     const tt = $('#tp-time');
     if (tt) tt.textContent = `${fmt(video.currentTime - clip.in, true)} / ${fmt(clip.out - clip.in, true)}`;
     drawTimeline();
@@ -627,6 +636,9 @@
       ctx.fillText('💥', X(clip.peak), 14);
       ctx.fillRect(X(clip.peak) - 1, 16, 2, h - 20);
     }
+    // captions
+    ctx.fillStyle = '#4fd1ff';
+    for (const cap of clip.captions || []) ctx.fillRect(X(cap.start) + 1, h - 6, Math.max(2, X(cap.end) - X(cap.start) - 2), 4);
     // playhead
     ctx.fillStyle = '#fff';
     ctx.fillRect(X(video.currentTime) - 1, 0, 2, h);
@@ -746,6 +758,33 @@
         <label class="field">Reaction (appears at the 💥 hit)<div class="row gap"><input data-key="text.payoff" value="${esc(c.text.payoff)}" placeholder="💀💀💀"><button class="btn sm" data-act="reroll-payoff" title="New idea">🎲</button></div></label>
         <div class="field">Reaction style${chips('text.payoffStyle', styles, c.text.payoffStyle)}</div>
         <label class="field">Handle<input data-key="text.handle" value="${esc(c.text.handle)}" placeholder="@yourchannel"></label>`;
+    } else if (ed.tab === 'caps') {
+      const styles = Object.entries(Render.STYLES).map(([k, v]) => [k, v.label]);
+      const rel = (t) => fmt(t - c.in, true);
+      const list = [...c.captions].sort((a, b) => a.start - b.start);
+      p.innerHTML = `
+        <button class="btn primary block" data-act="cap-add">＋ Caption at ${rel(ed.video.currentTime)}</button>
+        <p class="hint">Play the short, pause when someone talks or something happens, tap <b>＋ Caption</b> and type. Blue bars on the timeline show your captions.</p>
+        ${list.length ? list.map((cap) => `
+          <div class="cap ${ed.video.currentTime >= cap.start && ed.video.currentTime < cap.end ? 'live' : ''}">
+            <div class="cap-top">
+              <button class="link mono" data-act="cap-play" data-id="${cap.id}">▶ ${rel(cap.start)}–${rel(cap.end)}</button>
+              <span class="spacer"></span>
+              <button class="btn sm ghost" data-act="cap-split" data-id="${cap.id}" title="Split into quick 2–3 word captions">✂️ Split</button>
+              <button class="icon-btn" data-act="cap-del" data-id="${cap.id}" aria-label="Delete caption">${ICON.trash}</button>
+            </div>
+            <input class="cap-text" data-cap="${cap.id}" value="${esc(cap.text)}" placeholder="What’s happening / being said…">
+            <div class="row gap">
+              <button class="btn sm" data-act="cap-start" data-id="${cap.id}">⟦ Start here</button>
+              <button class="btn sm" data-act="cap-end" data-id="${cap.id}">End here ⟧</button>
+            </div>
+          </div>`).join('') : ''}
+        <div class="field">Caption style${chips('text.capStyle', styles, c.text.capStyle)}</div>
+        <label class="field">Size<input type="range" data-key="text.capSize" min="40" max="120" value="${c.text.capSize}"></label>
+        <label class="field">Position<input type="range" data-key="text.capY" min="0.1" max="0.85" step="0.01" value="${c.text.capY}"></label>
+        ${toggleRow('text.capPop', 'Pop-in animation', c.text.capPop)}
+        ${toggleRow('text.capUpper', 'ALL CAPS', c.text.capUpper)}`;
+      if (ed.focusCap) { const el = p.querySelector(`[data-cap="${ed.focusCap}"]`); ed.focusCap = null; if (el) { el.focus(); el.scrollIntoView({ block: 'center' }); } }
     } else if (ed.tab === 'fx') {
       p.innerHTML = `
         <div class="field">Speed${chips('speed', [[0.5, '0.5×'], [0.75, '0.75×'], [1, '1×'], [1.25, '1.25×'], [1.5, '1.5×'], [2, '2×']], c.speed)}</div>
@@ -798,6 +837,13 @@
     if (key === 'post.title') $('#title-n').textContent = v.length + '/100';
     touchClip();
   });
+  app.addEventListener('input', (e) => {
+    if (!ed) return;
+    const el = e.target.closest('[data-cap]');
+    if (!el) return;
+    const cap = ed.clip.captions.find((x) => x.id === el.dataset.cap);
+    if (cap) { cap.text = el.value; touchClip(); }
+  });
   app.addEventListener('change', (e) => {
     if (!ed) return;
     const el = e.target.closest('input[type=checkbox][data-key]');
@@ -815,7 +861,7 @@
     try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {}
     const m = modal(`
       <h2 id="ex-h">Exporting…</h2>
-      <p class="muted small" id="ex-sub">Plays the short in real time while recording. Keep the app open and the screen on.</p>
+      <p class="muted small" id="ex-sub">Your phone records the short as it plays, so this takes about ${Math.round(list.reduce((s, c) => s + Render.outputDuration(c), 0))} seconds. Keep the app open and the screen on.</p>
       <div class="progress big"><i id="ex-bar" style="width:0%"></i></div>
       <p class="mono center" id="ex-pct">0%</p>
       <button class="btn ghost block" id="ex-cancel">Cancel</button>`);
@@ -914,7 +960,7 @@
         toast('Deleted');
         return go('library');
       }
-      case 'rescan': scanQueue.push(s.id); s.status = 'scanning'; render(); return runScans();
+      case 'rescan': s.scanAttempts = 0; scanQueue.push(s.id); s.status = 'scanning'; render(); return runScans();
       case 'preview-hl': {
         const h = s.highlights[+el.dataset.i];
         player.currentTime = h.start; player.play().catch(() => {});
@@ -987,11 +1033,58 @@
       case 'reroll-payoff': c.text.payoff = pick(PAYOFFS); renderPanel(); break;
       case 'reroll-title': c.post.title = suggestTitle(c); renderPanel(); break;
       case 'reset-desc': c.post.description = suggestDescription(c); renderPanel(); break;
+      case 'cap-add': {
+        setPlaying(false);
+        const t = clamp(v.currentTime, c.in, c.out - 0.3);
+        const next = c.captions.filter((x) => x.start > t + 0.05).sort((a, b) => a.start - b.start)[0];
+        const end = Math.min(t + 2.5, next ? next.start : Infinity, c.out);
+        // A caption already showing here ends where the new one starts.
+        for (const x of c.captions) if (x.start <= t && x.end > t) x.end = t;
+        c.captions = c.captions.filter((x) => x.end - x.start > 0.05);
+        const cap = { id: uid(), start: t, end, text: '' };
+        c.captions.push(cap);
+        ed.focusCap = cap.id;
+        renderPanel();
+        break;
+      }
+      case 'cap-del': c.captions = c.captions.filter((x) => x.id !== el.dataset.id); renderPanel(); break;
+      case 'cap-play': {
+        const cap = c.captions.find((x) => x.id === el.dataset.id);
+        if (cap) { v.currentTime = cap.start; setPlaying(true); }
+        return;
+      }
+      case 'cap-start': case 'cap-end': {
+        const cap = c.captions.find((x) => x.id === el.dataset.id);
+        if (!cap) return;
+        if (act === 'cap-start') cap.start = clamp(v.currentTime, c.in, cap.end - 0.2);
+        else cap.end = clamp(v.currentTime, cap.start + 0.2, c.out);
+        renderPanel();
+        break;
+      }
+      case 'cap-split': {
+        const cap = c.captions.find((x) => x.id === el.dataset.id);
+        const words = (cap && cap.text.trim().split(/\s+/)) || [];
+        if (words.length < 3) return toast('Type a longer line first, then split it');
+        // Groups of 3 words; avoid a lonely last word (4 → 2 + 2).
+        const fixed = [];
+        for (let i = 0, n = words.length; n > 0;) {
+          const size = n === 4 ? 2 : Math.min(3, n);
+          fixed.push(words.slice(i, i + size).join(' '));
+          i += size; n -= size;
+        }
+        const per = (cap.end - cap.start) / fixed.length;
+        const parts = fixed.map((text, i) => ({ id: uid(), start: cap.start + i * per, end: cap.start + (i + 1) * per, text }));
+        c.captions = c.captions.filter((x) => x.id !== cap.id).concat(parts);
+        renderPanel();
+        toast(`Split into ${parts.length} captions`);
+        break;
+      }
       case 'copy-title': return copy(c.post.title);
       case 'copy-desc': return copy(c.post.description);
       case 'save-template':
         settings.template = { ...settings.template, frame: structuredClone(c.frame), fx: structuredClone(c.fx), speed: c.speed,
-          text: { style: c.text.style, size: c.text.size, y: c.text.y, payoffStyle: c.text.payoffStyle, payoffY: c.text.payoffY } };
+          text: { style: c.text.style, size: c.text.size, y: c.text.y, payoffStyle: c.text.payoffStyle, payoffY: c.text.payoffY,
+            capStyle: c.text.capStyle, capSize: c.text.capSize, capY: c.text.capY, capPop: c.text.capPop, capUpper: c.text.capUpper } };
         await saveSettings();
         return toast('New shorts will use this look');
       default: return;

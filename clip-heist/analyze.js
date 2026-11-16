@@ -4,18 +4,47 @@
 const Analyzer = (() => {
   const STEP = 0.5; // seconds per analysis cell
 
-  function loadVideo(url) {
+  const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  // iPhone Safari only reads a video's metadata until something asks for a frame,
+  // so "loadeddata" may never fire. Wait for metadata, then seek to force a frame.
+  function whenReady(v, t = 0, timeoutMs = 25000) {
     return new Promise((resolve, reject) => {
-      const v = document.createElement('video');
-      v.muted = true; v.playsInline = true; v.preload = 'auto';
-      v.setAttribute('playsinline', '');
-      v.className = 'offscreen';
-      document.body.appendChild(v);
-      const done = (ok) => { v.onloadeddata = v.onerror = null; ok ? resolve(v) : (v.remove(), reject(new Error('This video format can’t be played on this device.'))); };
-      v.onloadeddata = () => done(true);
-      v.onerror = () => done(false);
-      v.src = url;
+      let settled = false;
+      const finish = (err) => {
+        if (settled) return; settled = true;
+        clearTimeout(timer);
+        v.removeEventListener('loadedmetadata', onMeta);
+        v.removeEventListener('error', onErr);
+        err ? reject(err) : resolve(v);
+      };
+      const onErr = () => finish(new Error('This video format can’t be played on this device.'));
+      const onMeta = () => {
+        if (!(v.videoWidth > 0)) return finish(new Error('No video picture found in this file.'));
+        seek(v, t).then(() => finish());
+      };
+      const timer = setTimeout(() => finish(new Error('The video took too long to open. Try a shorter recording.')), timeoutMs);
+      v.addEventListener('error', onErr);
+      if (v.readyState >= 2) { onMeta(); return; }
+      if (v.readyState >= 1) onMeta(); else v.addEventListener('loadedmetadata', onMeta);
+      try { v.load(); } catch {}
     });
+  }
+
+  function makeVideo(url, muted = true) {
+    const v = document.createElement('video');
+    v.muted = muted; v.playsInline = true; v.preload = 'auto';
+    v.setAttribute('playsinline', '');
+    if (muted) v.setAttribute('muted', '');
+    v.className = 'offscreen';
+    document.body.appendChild(v);
+    v.src = url;
+    return v;
+  }
+
+  async function loadVideo(url) {
+    const v = makeVideo(url);
+    try { return await whenReady(v, 0.1); } catch (e) { v.remove(); throw e; }
   }
 
   function seek(v, t) {
@@ -48,9 +77,10 @@ const Analyzer = (() => {
     return out;
   }
 
-  async function audioFeatures(blob, cells) {
+  async function audioFeatures(blob, cells, opts) {
     // Decoding needs the whole file in memory, so skip it for very large files.
-    if (blob.size > 900 * 1024 * 1024) return null;
+    if (opts.skipAudio) return null;
+    if (blob.size > (IS_IOS ? 250 : 700) * 1024 * 1024) return null;
     const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
     if (!OAC) return null;
     try {
@@ -90,7 +120,8 @@ const Analyzer = (() => {
   }
 
   async function visualFeatures(v, duration, cells, onProgress) {
-    const interval = duration <= 300 ? 0.5 : duration <= 1200 ? 1 : 2;
+    // Each seek costs ~50–150 ms on a phone, so cap the number of samples.
+    const interval = Math.max(0.5, Math.ceil((duration / 500) * 2) / 2);
     const W = 48, H = 27;
     const c = document.createElement('canvas');
     c.width = W; c.height = H;
@@ -135,13 +166,14 @@ const Analyzer = (() => {
 
   async function run(blob, opts, onProgress) {
     const url = URL.createObjectURL(blob);
+    onProgress(0.01, 'Opening video…');
     const v = await loadVideo(url);
     try {
       const duration = v.duration;
       if (!Number.isFinite(duration) || duration <= 0) throw new Error('Couldn’t read the video length.');
       const cells = Math.max(1, Math.ceil(duration / STEP));
       onProgress(0.02, 'Listening for action…');
-      const audio = await audioFeatures(blob, cells);
+      const audio = await audioFeatures(blob, cells, opts);
       onProgress(0.25, 'Watching for action…');
       const vis = await visualFeatures(v, duration, cells, (p) => onProgress(0.25 + p * 0.65, 'Watching for action…'));
 
@@ -209,5 +241,5 @@ const Analyzer = (() => {
     }
   }
 
-  return { run, loadVideo, seek, thumbAt };
+  return { run, loadVideo, makeVideo, whenReady, seek, thumbAt, IS_IOS };
 })();
