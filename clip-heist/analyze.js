@@ -58,12 +58,13 @@ const Analyzer = (() => {
   }
 
   // Robust z-score (median / MAD) so one giant explosion doesn't flatten everything else.
-  function robustZ(arr) {
+  // minSpread stops near-constant signals (e.g. silence) from turning tiny blips into huge scores.
+  function robustZ(arr, minSpread = 1e-6) {
     const vals = Array.from(arr).filter(Number.isFinite).sort((a, b) => a - b);
     if (!vals.length) return arr.map(() => 0);
     const med = vals[Math.floor(vals.length / 2)];
     const dev = vals.map((x) => Math.abs(x - med)).sort((a, b) => a - b);
-    const mad = dev[Math.floor(dev.length / 2)] * 1.4826 || 1e-6;
+    const mad = Math.max(dev[Math.floor(dev.length / 2)] * 1.4826, minSpread);
     return arr.map((x) => (Number.isFinite(x) ? Math.max(-3, Math.min(6, (x - med) / mad)) : 0));
   }
 
@@ -177,17 +178,17 @@ const Analyzer = (() => {
       onProgress(0.25, 'Watching for action…');
       const vis = await visualFeatures(v, duration, cells, (p) => onProgress(0.25 + p * 0.65, 'Watching for action…'));
 
-      const zLoud = audio ? robustZ(audio.loud) : new Array(cells).fill(0);
-      const zOnset = audio ? robustZ(audio.onset) : new Array(cells).fill(0);
-      const zMotion = robustZ(vis.motion);
-      const zFlash = robustZ(vis.flash);
+      const zLoud = audio ? robustZ(audio.loud, 2) : new Array(cells).fill(0);
+      const zOnset = audio ? robustZ(audio.onset, 2) : new Array(cells).fill(0);
+      const zMotion = robustZ(vis.motion, 1);
+      const zFlash = robustZ(vis.flash, 1);
       const raw = new Array(cells).fill(0).map((_, i) => audio
         ? 0.3 * zLoud[i] + 0.35 * zOnset[i] + 0.25 * zMotion[i] + 0.1 * zFlash[i]
         : 0.7 * zMotion[i] + 0.3 * zFlash[i]);
       const score = smooth(raw, 2);
 
-      // Pick peaks, keeping them at least one clip length apart.
-      const gap = Math.max(8, opts.preRoll + opts.postRoll) / STEP;
+      // Pick peaks a few seconds apart (big moments often come in quick succession).
+      const gap = Math.max(6, opts.postRoll + 3) / STEP;
       const order = score.map((s, i) => i).sort((a, b) => score[b] - score[a]);
       const maxCount = Math.min(20, Math.max(3, Math.round(duration / 45)));
       const picked = [];
@@ -218,7 +219,8 @@ const Analyzer = (() => {
       }
       highlights.sort((a, b) => b.score - a.score);
       onProgress(0.92, 'Grabbing thumbnails…');
-      for (const h of highlights) h.thumb = await thumbAt(v, h.peak);
+      // Grab the thumbnail just after the hit, past any white flash.
+      for (const h of highlights) h.thumb = await thumbAt(v, Math.min(duration - 0.1, h.peak + 0.7));
 
       // Downsampled energy curve for the timeline heat strip.
       const POINTS = 240;
