@@ -21,7 +21,7 @@ export default {
     try {
       const route = `${request.method} ${url.pathname}`;
       switch (route) {
-        case 'GET /api/health': return json({ ok: true, payments: !!env.STRIPE_SECRET_KEY, login: !!env.RESEND_API_KEY, prices: priceIds(env) });
+        case 'GET /api/health': return json({ ok: true, payments: paymentsOn(env), login: !!env.RESEND_API_KEY, prices: priceIds(env) });
         case 'POST /api/checkout': return await checkout(request, env, url);
         case 'POST /api/checkout/complete': return await checkoutComplete(request, env);
         case 'POST /api/me': return await me(request, env);
@@ -57,6 +57,8 @@ const DESCRIPTION = 'Unlimited 1080p exports, every highlight, streamer layout, 
 const TAX_CODE = 'txcd_10103000';
 const priceIds = (env) => Object.fromEntries(Object.entries(PLANS).map(([k, v]) => [k, env[v.env] || (env.STRIPE_SECRET_KEY ? 'auto' : '')]));
 const priceCache = {};
+// PAYMENTS_PAUSED=true hides checkout everywhere (site shows the waitlist) without removing keys.
+const paymentsOn = (env) => !!env.STRIPE_SECRET_KEY && !/^(1|true|yes|on)$/i.test(String(env.PAYMENTS_PAUSED || ''));
 
 async function resolvePrice(env, plan) {
   const cfg = PLANS[plan];
@@ -156,6 +158,7 @@ async function passFor(env, customerId, email) {
 // ---------- routes ----------
 async function checkout(request, env, url) {
   const { plan, email } = await body(request);
+  if (!paymentsOn(env)) fail('Pro isn’t on sale yet. Join the waitlist!', 503);
   const price = await resolvePrice(env, plan);
   const base = origin(env, url);
   const params = {

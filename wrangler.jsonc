@@ -21,6 +21,8 @@
   "vars": {
     "PUBLIC_URL": "https://getclipheist.app",
     "EMAIL_FROM": "Clip Heist <login@getclipheist.app>",
+    // "true" = checkout hidden, site shows the waitlist. Set to "false" to sell Pro.
+    "PAYMENTS_PAUSED": "true",
     "TRIAL_DAYS": "0", // free-trial days on Pro subscriptions; 0 = no trial
     // Optional Stripe Price IDs. Leave empty and the server finds or creates the
     // Clip Heist products in Stripe automatically (by lookup key).

@@ -60,6 +60,10 @@
     document.querySelectorAll('[data-month]').forEach((el) => { el.textContent = el.dataset[period]; });
   }));
 
+  let submitLabel = 'Join the waitlist';
+  let successMsg = "You're on the list 🎉 We'll email you on launch day.";
+  const form = $('#wl-form'), msg = $('#wl-msg');
+
   // When payments are live, turn the pricing buttons into checkout buttons.
   fetch('/api/health').then((r) => (r.ok ? r.json() : null)).then((h) => {
     if (!h || !h.payments) return;
@@ -73,10 +77,20 @@
     if (founder && h.prices.lifetime) { founder.textContent = 'Become a founder · $79'; founder.href = 'app/?buy=lifetime'; }
     const note = document.querySelector('#pricing .fine.center');
     if (note) note.textContent = 'Cancel anytime in a couple of clicks. Secure checkout by Stripe.';
+    // Pro is on sale: the waitlist becomes an email-updates signup.
+    const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+    set('founder-sub', 'Pro forever, plus every future feature. Pay once.');
+    set('wl-title', 'Get the best clipping tips.');
+    set('wl-lead', 'New features, viral clip breakdowns and creator tips, straight to your inbox. Plus first dibs on new <b>founder deals</b>.');
+    set('wl-fine', 'No spam. Unsubscribe anytime.');
+    const nav = document.getElementById('nav-cta');
+    if (nav) { nav.textContent = 'Go Pro'; nav.href = '#pricing'; }
+    submitLabel = 'Keep me posted';
+    form.querySelector('button').textContent = submitLabel;
+    successMsg = "You're in 🎉 Watch your inbox for clip tips and updates.";
   }).catch(() => {});
 
-  // Waitlist.
-  const form = $('#wl-form'), msg = $('#wl-msg');
+  // Waitlist / email updates.
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = form.email.value.trim();
@@ -90,17 +104,17 @@
       const res = await fetch(WAITLIST_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ email, source: 'website', page: location.pathname, _subject: 'New Clip Heist email signup' }),
+        body: JSON.stringify({ email, source: 'website', page: location.pathname, _subject: 'New Clip Heist signup' }),
       });
       if (!res.ok) throw new Error(String(res.status));
       form.reset();
-      msg.textContent = "You're in 🎉 Watch your inbox for clip tips and updates.";
+      msg.textContent = successMsg;
       msg.classList.add('ok');
     } catch {
       msg.textContent = 'Something went wrong. Please try again.';
       msg.classList.add('err');
     } finally {
-      btn.disabled = false; btn.textContent = 'Keep me posted';
+      btn.disabled = false; btn.textContent = submitLabel;
     }
   });
 })();
