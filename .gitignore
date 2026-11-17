@@ -8,3 +8,4 @@ build/
 hts_*.txt
 .wrangler/
 node_modules/
+news-reels/out/

@@ -1,0 +1,41 @@
+{
+  "brand": "DAILY DROP",
+  "date": "NOV 17, 2026",
+  "caption": "South Korea is checking students' GLASSES before its biggest exam of the year 👓🤖 AI smart glasses cheating is real. Should exams go back to pen & paper only? #news #southkorea #ai #suneung #smartglasses #exam #worldnews",
+  "sources": [
+    "https://www.yahoo.com/news/world/articles/students-glasses-inspected-ai-cheating-132743263.html",
+    "https://www.koreaherald.com/article/10939565",
+    "https://www.koreaherald.com/article/10938746",
+    "https://www.koreajoongangdaily.com/korea/korea-sees-first-criminal-charge-over-cheating-using-ai-smart-glassesnbsp/12771828",
+    "https://oecd.ai/en/incidents/2026-08-20-734f"
+  ],
+  "scenes": [
+    { "type": "hook", "dur": 3.6, "icon": "glasses",
+      "kicker": "BREAKING",
+      "text": "This country is about to *inspect every student's glasses*" },
+    { "type": "big", "dur": 4.4, "icon": "calendar",
+      "kicker": "SOUTH KOREA",
+      "big": "THU, NOV 19",
+      "text": "The *Suneung* - the 8-hour exam that decides a student's whole future" },
+    { "type": "list", "dur": 5.6,
+      "title": "The problem? *AI smart glasses.* Already caught in 2026:",
+      "items": ["TOEIC English test", "Financial analyst exam - *5-year ban*", "Fire engineer exam - *first criminal charge*"],
+      "mark": "x" },
+    { "type": "list", "dur": 5.6,
+      "title": "So on exam day, *officials will check:*",
+      "items": ["Every pair of glasses", "Watches", "Collars, sleeves & buttons", "Phones *OFF and handed in*"],
+      "mark": "check" },
+    { "type": "stamp", "dur": 4.0,
+      "title": "Caught with a smart device?",
+      "stamp": "SCORE VOID",
+      "text": "+ *banned from retaking it next year*" },
+    { "type": "big", "dur": 4.6, "icon": "alert",
+      "kicker": "THE TWIST",
+      "big": "DETECTORS FAILED",
+      "text": "In a mock test, radio-frequency scanners *couldn't spot the AI glasses.* Officials admit fully blocking it is *impossible.*" },
+    { "type": "cta", "dur": 4.2,
+      "text": "Should big exams go *back to pen and paper only?*",
+      "sub": "Tell me in the comments",
+      "follow": "Follow for the world in 30 seconds" }
+  ]
+}
