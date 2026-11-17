@@ -1,0 +1,83 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:D;src:url(../../clip-heist/assets/fonts/display-900.woff2)}
+@font-face{font-family:T;src:url(../../clip-heist/assets/fonts/inter-600.woff2)}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:transparent;font-family:D,sans-serif}
+#s{position:absolute;inset:0}
+.abs{position:absolute;left:0;right:0;text-align:center}
+.w{font-weight:900;color:#fff;letter-spacing:-2px;line-height:.95;text-transform:uppercase;-webkit-text-stroke:0}
+.sh{text-shadow:0 8px 0 rgba(0,0,0,.55),0 0 40px rgba(0,0,0,.6)}
+.grad{background:linear-gradient(90deg,#ff3ea5,#ff8a3d);-webkit-background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 7px 0 rgba(0,0,0,.6))}
+.gold{color:#ffd23f}
+.pill{display:inline-block;padding:18px 36px;border-radius:999px;background:rgba(10,10,16,.85);border:3px solid rgba(255,255,255,.15);font-family:T;font-size:44px;color:#fff;letter-spacing:0}
+.card{position:absolute;left:90px;right:90px;border-radius:44px;background:rgba(12,12,20,.92);border:2px solid rgba(255,255,255,.12);box-shadow:0 30px 80px rgba(0,0,0,.6);padding:44px 50px;font-family:T;color:#fff}
+.stat{display:flex;justify-content:space-between;align-items:center;padding:22px 0;border-bottom:2px solid rgba(255,255,255,.08);font-size:46px}
+.stat b{font-family:D;font-size:64px}
+.phone{position:absolute;left:50%;width:560px;height:1212px;margin-left:-280px;border-radius:76px;background:#000;padding:16px;box-shadow:0 0 0 5px #2a2a38,0 40px 120px rgba(255,62,165,.45)}
+.phone img{width:100%;height:100%;object-fit:cover;object-position:top;border-radius:60px}
+.vign{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,.35) 30%,rgba(0,0,0,.75) 100%)}
+.logo{width:300px;height:300px;margin:0 auto;filter:drop-shadow(0 0 40px rgba(255,62,165,.7))}
+.bar{height:26px;border-radius:20px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:16px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#ff3ea5,#ff8a3d)}
+#flash{position:absolute;inset:0;background:#fff;opacity:0}
+</style></head><body><div id="s"><div class="vign"></div><div id="L"></div></div><div id="flash"></div>
+<script>
+const ICON=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff3ea5"/><stop offset="1" stop-color="#ff8a3d"/></linearGradient></defs>
+  
+  <rect x="166" y="84" width="180" height="344" rx="34" fill="none" stroke="url(#lg)" stroke-width="26"/>
+  <path d="M226 196v120l100-60z" fill="url(#lg)"/>
+  <path d="M96 150l60 40M96 362l60-40M416 150l-60 40M416 362l-60-40" stroke="#ffd23f" stroke-width="20" stroke-linecap="round"/>
+</svg>`, SH='shots/';
+const P=Object.assign({day:1,followers:0,views:0,earned:0,goal:10000,handle:'@clipheist'},JSON.parse(decodeURIComponent(location.hash.slice(1)||'%7B%7D')));
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),pr=(t,a,b)=>cl((t-a)/(b-a));
+const ob=(x)=>{const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)},oc=(x)=>1-Math.pow(1-x,3);
+const pop=(t,a,d=.32)=>{const p=pr(t,a,a+d);return p<=0?0:ob(p)};
+const fl=(t,a,l=.2)=>{const d=t-a;return d>=0&&d<l?.75*(1-d/l):0};
+const el=(h,s)=>'<div class="abs" style="'+s+'">'+h+'</div>';
+const money=(n)=>'£'+Math.round(n).toLocaleString('en-GB');
+const num=(n)=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(Math.round(n));
+function render(t){let h='',f=0,sx=0,sy=0;
+ if(t<3.2){ // HOOK
+  const s=t<.35?2.4-1.4*oc(pr(t,0,.35)):1; f=fl(t,.35); if(t>.35&&t<.7){const e=1-(t-.35)/.35;sx=Math.sin(t*90)*24*e;sy=Math.cos(t*70)*18*e}
+  h+=el('<div class="w sh" style="font-size:300px">DAY '+P.day+'</div>','top:520px;transform:scale('+s+')');
+  h+=el('<div class="w sh" style="font-size:78px;letter-spacing:-1px">of using <span class="grad">Clip Heist</span><br>to make</div>','top:860px;opacity:'+pr(t,.7,1)+';transform:translateY('+(1-oc(pr(t,.7,1.05)))*40+'px)');
+  h+=el('<div class="w sh gold" style="font-size:170px">'+money(P.goal)+'/MO</div>','top:1060px;transform:scale('+pop(t,1.2)+')');
+  h+=el('<div class="w sh" style="font-size:150px;letter-spacing:4px">CLIPPING</div>','top:1300px;opacity:'+pr(t,1.8,2.1)+';transform:scale('+(1+.05*Math.sin(t*6))+')');
+  f+=fl(t,1.2,.15);
+ } else if(t<7){ // STARTING FROM
+  const a=3.2,p=pop(t,a,.4);
+  h+=el('<div class="w sh" style="font-size:120px">STARTING FROM</div>','top:330px;transform:scale('+pop(t,a)+')');
+  h+=el('<div class="w sh grad" style="font-size:230px">'+(P.day===1?'ZERO':money(P.earned))+'</div>','top:470px;transform:scale('+pop(t,a+.4)+')');
+  h+='<div class="card" style="top:'+(820+(1-oc(pr(t,a+.6,a+1.1)))*900)+'px">'+
+   '<div style="display:flex;align-items:center;gap:26px;margin-bottom:20px"><div style="width:120px;height:120px;border-radius:99px;background:#1d1d28;display:grid;place-items:center">'+ICON.replace('<svg','<svg width="90" height="90"')+'</div><div><div style="font-family:D;font-size:56px">'+P.handle+'</div><div style="color:#a3a3b8;font-size:38px">Clipping channel · Day '+P.day+'</div></div></div>'+
+   '<div class="stat"><span>Followers</span><b>'+num(P.followers*pr(t,a+1,a+2))+'</b></div>'+
+   '<div class="stat"><span>Views</span><b>'+num(P.views*pr(t,a+1,a+2))+'</b></div>'+
+   '<div class="stat" style="border:0"><span>Earned</span><b class="gold" style="color:#ffd23f">'+money(P.earned*pr(t,a+1,a+2))+'</b></div></div>';
+  f=fl(t,a+.4,.15);
+ } else if(t<12.2){ // THE PLAN
+  const a=7;
+  h+=el('<div class="w sh" style="font-size:120px">THE <span class="grad">PLAN</span></div>','top:190px;transform:scale('+pop(t,a)+')');
+  const steps=['🎮 Clip my favourite<br>streamers &amp; games','💥 Clip Heist finds<br>the best moments','📲 Post 3 clips<br>every day'];
+  steps.forEach((s,i)=>{const b=a+.6+i*.9;h+=el('<div class="pill" style="font-size:50px;line-height:1.15;padding:24px 40px">'+s+'</div>','top:'+(380+i*190)+'px;opacity:'+cl(pop(t,b))+';transform:translateX('+(1-cl(oc(pr(t,b,b+.35))))*(i%2?600:-600)+'px)')});
+  h+='<div class="phone" style="top:'+(980+(1-oc(pr(t,a+.4,a+1)))*900)+'px;transform:rotate(-3deg)"><img src="'+SH+(t<a+3.2?'3-highlights.png':'4b-editor-hit.png')+'"></div>';
+  f=fl(t,a,.15)+fl(t,a+3.2,.18);
+ } else if(t<15){ // GOAL TRACKER
+  const a=12.2,p=Math.max(.02,P.earned/P.goal);
+  h+=el('<div class="w sh" style="font-size:110px">GOAL TRACKER</div>','top:470px;transform:scale('+pop(t,a)+')');
+  h+='<div class="card" style="top:'+(680+(1-oc(pr(t,a+.2,a+.6)))*900)+'px"><div style="display:flex;justify-content:space-between;font-size:46px"><span>'+money(P.earned)+'</span><span style="color:#a3a3b8">'+money(P.goal)+'/mo</span></div><div class="bar"><i style="width:'+(p*100*pr(t,a+.6,a+1.6))+'%"></i></div><div style="margin-top:26px;font-size:42px;color:#c4c4d4">Day '+P.day+' of the challenge</div></div>';
+  h+=el('<div class="w sh gold" style="font-size:96px">FOLLOW TO SEE<br>IF IT WORKS</div>','top:1140px;transform:scale('+pop(t,a+1.3)+')');
+  f=fl(t,a,.15);
+ } else { // END CARD
+  const a=15;
+  h+=el('<div class="logo">'+ICON+'</div>','top:420px;transform:scale('+pop(t,a,.45)+')');
+  h+=el('<div class="w sh" style="font-size:140px;letter-spacing:-3px"><span class="grad">CLIP</span> HEIST</div>','top:770px;opacity:'+pr(t,a+.2,a+.5));
+  h+=el('<div class="pill">Clip your favourite streamers &amp; games</div>','top:960px;opacity:'+pr(t,a+.5,a+.8));
+  h+=el('<div class="w sh gold" style="font-size:84px;letter-spacing:0;text-transform:none">getclipheist.app</div>','top:1110px;transform:scale('+pop(t,a+.8)+')');
+  h+=el('<div class="w sh" style="font-size:64px;letter-spacing:0;text-transform:none">Day '+(P.day+1)+' tomorrow 👀</div>','top:1260px;opacity:'+pr(t,a+1.2,a+1.6));
+  f=fl(t,a,.2);
+ }
+ document.getElementById('L').innerHTML=h;document.getElementById('flash').style.opacity=f;
+ document.getElementById('s').style.transform='translate('+sx+'px,'+sy+'px)';
+}
+window.renderFrame=render;
+</script></body></html>
