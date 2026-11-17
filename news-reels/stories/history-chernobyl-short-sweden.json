@@ -1,0 +1,110 @@
+{
+  "brand": "DAILY DROP",
+  "date": "HISTORY · 1986",
+  "voice": "af_heart",
+  "speed": 1.08,
+  "assets": "assets/chernobyl",
+  "sources": [
+    "https://www-pub.iaea.org/MTCD/Publications/PDF/Pub913e_web.pdf",
+    "https://world-nuclear.org/information-library/safety-and-security/safety-of-plants/chernobyl-accident",
+    "https://en.wikipedia.org/wiki/Chernobyl_disaster"
+  ],
+  "caption": "The Soviet Union didn't tell anyone about Chernobyl. Sweden found out from workers' SHOES 👟☢️ Would the world have known without them? 👇 #chernobyl #history #sweden #coldwar #historytok #dailydrop",
+  "scenes": [
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "forsmark.jpg",
+      "focus": [
+        0.6,
+        0.45
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "kicker": "SWEDEN · 28 APRIL 1986",
+      "title": "Alarms at the *wrong* plant",
+      "label": {
+        "name": "FORSMARK NUCLEAR PLANT",
+        "role": "Sweden · photo 2014"
+      },
+      "say": "On the morning of April twenty-eighth, nineteen eighty-six, radiation alarms went off at a nuclear plant in Sweden.",
+      "display": "On the morning of April 28th, 1986, radiation alarms went off at a nuclear plant in Sweden."
+    },
+    {
+      "type": "big",
+      "dur": 3,
+      "icon": "alert",
+      "kicker": "FORSMARK",
+      "big": "THE SHOES",
+      "text": "Radiation on *workers' shoes*",
+      "capY": 1430,
+      "say": "Workers were setting off the radiation detectors. The radiation was on their shoes."
+    },
+    {
+      "type": "list",
+      "dur": 3,
+      "bg": "forsmark.jpg",
+      "focus": [
+        0.6,
+        0.45
+      ],
+      "mark": "dot",
+      "capY": 1430,
+      "title": "But their reactor was *fine.*",
+      "items": [
+        "No leak at Forsmark",
+        "It came in *on the wind*",
+        "From *1,000+ km* away"
+      ],
+      "say": "Engineers checked everything. Their own reactor wasn't leaking. The radiation had blown in on the wind, from more than a thousand kilometres away."
+    },
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "reactor1986.jpg",
+      "focus": [
+        0.5,
+        0.42
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "kicker": "THE SOURCE",
+      "title": "Chernobyl",
+      "label": {
+        "name": "REACTOR 4 AFTER THE EXPLOSION",
+        "role": "Aerial photo · 1986"
+      },
+      "say": "The source was Chernobyl, in Soviet Ukraine, where Reactor Four had exploded two days earlier. The Soviet Union hadn't told the world."
+    },
+    {
+      "type": "big",
+      "dur": 3,
+      "icon": "calendar",
+      "day": "28",
+      "month": "APR",
+      "kicker": "THAT EVENING",
+      "big": "SOVIET TV",
+      "text": "A short statement, *days late*",
+      "capY": 1430,
+      "say": "Under pressure from Sweden, Soviet television read out a short statement that evening, admitting there had been an accident."
+    },
+    {
+      "type": "cta",
+      "dur": 4,
+      "bg": "reactor1986.jpg",
+      "focus": [
+        0.5,
+        0.4
+      ],
+      "text": "Would the world have known *without Sweden?*",
+      "sub": "Tell me in the comments",
+      "follow": "Full documentary on our channel",
+      "say": "Would the world have found out without Sweden? The full story is on our channel.",
+      "noCaptions": true
+    }
+  ]
+}

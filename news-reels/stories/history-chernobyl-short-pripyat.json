@@ -1,0 +1,126 @@
+{
+  "brand": "DAILY DROP",
+  "date": "HISTORY · 1986",
+  "voice": "af_heart",
+  "speed": 1.08,
+  "assets": "assets/chernobyl",
+  "sources": [
+    "https://www-pub.iaea.org/MTCD/Publications/PDF/Pub913e_web.pdf",
+    "https://world-nuclear.org/information-library/safety-and-security/safety-of-plants/chernobyl-accident",
+    "https://en.wikipedia.org/wiki/Chernobyl_disaster"
+  ],
+  "caption": "49,000 people were told to pack for 3 days. They never came back 🎡☢️ The story of Pripyat, the city Chernobyl emptied. Could you leave everything behind? 👇 #pripyat #chernobyl #history #abandoned #historytok #dailydrop",
+  "scenes": [
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "ferris.jpg",
+      "focus": [
+        0.55,
+        0.45
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "kicker": "PRIPYAT · 1986",
+      "title": "Pack for *3 days.*",
+      "say": "Forty-nine thousand people were told to pack for three days. They never came back."
+    },
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "memorial2009.jpg",
+      "focus": [
+        0.62,
+        0.5
+      ],
+      "zoom": [
+        1.0,
+        1.12
+      ],
+      "kicker": "3 KM AWAY",
+      "kickerColor": "cool",
+      "title": "The Chernobyl plant",
+      "label": {
+        "name": "CHERNOBYL REACTOR 4",
+        "role": "Under its 1986 sarcophagus · photo 2009"
+      },
+      "say": "Pripyat was a young city built for the workers of the Chernobyl nuclear plant, just three kilometres away. At one twenty-three in the morning, on April twenty-sixth, nineteen eighty-six, Reactor Four exploded.",
+      "display": "Pripyat was a young city built for the workers of the Chernobyl nuclear plant, just three kilometres away. At 1:23 in the morning, on April 26th, 1986, Reactor Four exploded."
+    },
+    {
+      "type": "big",
+      "dur": 3,
+      "icon": "calendar",
+      "day": "27",
+      "month": "APR",
+      "kicker": "THE WAIT",
+      "big": "36 HOURS",
+      "text": "Before the city was *evacuated*",
+      "capY": 1430,
+      "say": "But through Saturday, life in Pripyat went on almost as normal. It took around thirty-six hours before the city was evacuated, on the afternoon of the twenty-seventh.",
+      "display": "But through Saturday, life in Pripyat went on almost as normal. It took around 36 hours before the city was evacuated, on the afternoon of the 27th."
+    },
+    {
+      "type": "stamp",
+      "dur": 3,
+      "title": "Residents were told:",
+      "stamp": "3 DAYS",
+      "text": "Buses took the *whole city* away",
+      "capY": 1430,
+      "say": "Residents were told it would only be for three days. Buses took the whole city away in a single afternoon."
+    },
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "checkpoint.jpg",
+      "focus": [
+        0.45,
+        0.55
+      ],
+      "zoom": [
+        1.0,
+        1.12
+      ],
+      "kicker": "TODAY",
+      "title": "Still *off-limits*",
+      "label": {
+        "name": "EXCLUSION ZONE CHECKPOINT",
+        "role": "Dytiatky · photo 2013"
+      },
+      "say": "They never returned. Today, Pripyat sits inside a thirty-kilometre exclusion zone. Its apartments, its schools, and its famous Ferris wheel have been empty for forty years."
+    },
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "ferris.jpg",
+      "focus": [
+        0.35,
+        0.4
+      ],
+      "zoom": [
+        1.25,
+        1.4
+      ],
+      "kicker": "IN TOTAL",
+      "kickerColor": "cool",
+      "title": "*350,000* people moved",
+      "say": "In total, around three hundred and fifty thousand people were eventually moved from their homes because of Chernobyl."
+    },
+    {
+      "type": "cta",
+      "dur": 4,
+      "bg": "reactor1986.jpg",
+      "focus": [
+        0.5,
+        0.4
+      ],
+      "text": "Could you leave *everything* behind?",
+      "sub": "Tell me in the comments",
+      "follow": "Full documentary on our channel",
+      "say": "Could you leave everything behind? The full story is on our channel.",
+      "noCaptions": true
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "brand": "DAILY DROP",
+  "date": "HISTORY · 1986",
+  "voice": "af_heart",
+  "speed": 1.08,
+  "assets": "assets/chernobyl",
+  "sources": [
+    "https://www-pub.iaea.org/MTCD/Publications/PDF/Pub913e_web.pdf",
+    "https://world-nuclear.org/information-library/safety-and-security/safety-of-plants/chernobyl-accident",
+    "https://en.wikipedia.org/wiki/Chernobyl_disaster"
+  ],
+  "caption": "They pressed the OFF button… and Chernobyl exploded 😳☢️ The fatal flaw hidden in the reactor's control rods. Would you have pressed it? 👇 #chernobyl #history #nuclear #historytok #documentary #dailydrop",
+  "scenes": [
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "reactor1986.jpg",
+      "focus": [
+        0.5,
+        0.42
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "kicker": "1:23 AM · 26 APRIL 1986",
+      "title": "They pressed *the off button.*",
+      "say": "At Chernobyl, they pressed the button that was supposed to shut the reactor down. Seconds later, it exploded."
+    },
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "controlroom.jpg",
+      "focus": [
+        0.72,
+        0.5
+      ],
+      "zoom": [
+        1.05,
+        1.15
+      ],
+      "kicker": "THE NIGHT SHIFT",
+      "kickerColor": "cool",
+      "title": "A test gone wrong",
+      "label": {
+        "name": "CHERNOBYL CONTROL ROOM",
+        "role": "Unit 3 · same layout as Unit 4"
+      },
+      "say": "It was the middle of the night. Operators were running a delayed safety test, and the reactor's power had collapsed to almost nothing."
+    },
+    {
+      "type": "list",
+      "dur": 3,
+      "bg": "controlroom.jpg",
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "mark": "x",
+      "capY": 1430,
+      "title": "To get power back, they *broke the rules*",
+      "items": [
+        "Pulled out control rods",
+        "Left about *8* in the core",
+        "The rules said *at least 15*"
+      ],
+      "say": "To bring it back, they pulled control rods out of the core. The rules said at least fifteen had to stay in. They were down to about eight."
+    },
+    {
+      "type": "big",
+      "dur": 3,
+      "icon": "alert",
+      "kicker": "01:23:40",
+      "big": "AZ-5",
+      "text": "The emergency *shutdown* button",
+      "capY": 1430,
+      "say": "When the power started to climb, someone pressed A Z five, the emergency shutdown button. Every control rod began driving back in.",
+      "display": "When the power started to climb, someone pressed AZ-5, the emergency shutdown button. Every control rod began driving back in."
+    },
+    {
+      "type": "list",
+      "dur": 3,
+      "mark": "x",
+      "capY": 1430,
+      "title": "But the rods had *graphite tips*",
+      "items": [
+        "Graphite *speeds up* the reaction",
+        "The tips went in *first*",
+        "Power *surged* instead of dropping"
+      ],
+      "say": "But those rods had a fatal flaw. Their tips were made of graphite, which speeds the reaction up. The tips went in first. And instead of dropping, the power surged."
+    },
+    {
+      "type": "stamp",
+      "dur": 3,
+      "title": "Seconds later:",
+      "stamp": "EXPLOSION",
+      "text": "Reactor 4 was *destroyed*",
+      "capY": 1430,
+      "say": "Within seconds, Reactor Number Four exploded. The button meant to stop the disaster set it off."
+    },
+    {
+      "type": "cta",
+      "dur": 4,
+      "bg": "reactor1986.jpg",
+      "focus": [
+        0.5,
+        0.4
+      ],
+      "text": "Would you have *pressed it?*",
+      "sub": "Tell me in the comments",
+      "follow": "Full documentary on our channel",
+      "say": "So, would you have pressed it? The full story is on our channel.",
+      "noCaptions": true
+    }
+  ]
+}
