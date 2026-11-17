@@ -27,6 +27,15 @@ for sc in story["scenes"]:
     else:
         a = np.zeros(0, dtype=np.float32)
     clips.append(a)
+    # estimate per-word timings for captions (weighted by length, pauses at punctuation)
+    shown = (sc.get("display") or sc.get("say") or "").split()
+    if shown and len(a):
+        wts = [len(w.strip(".,?!")) + 2 + (4 if w[-1] in ".?!" else 2 if w[-1] in ",;:" else 0) for w in shown]
+        span, acc, words = len(a) / sr, 0.0, []
+        for w, wt in zip(shown, wts):
+            st = LEAD + span * acc / sum(wts); acc += wt
+            words.append({"w": w, "s": round(st, 3), "e": round(LEAD + span * acc / sum(wts), 3)})
+        sc["words"] = words
     sc["dur"] = round(max(sc["dur"] if not sc.get("say") else 0, LEAD + len(a) / sr + TAIL), 2)
 
 total = sum(sc["dur"] for sc in story["scenes"])

@@ -22,10 +22,121 @@ const SAFE = { left: 90, right: W - 170, top: 260, bottom: 1480 };
 
 let story, starts = [], total = 0;
 
-function init(s) {
+const IMG = {};
+let GRAIN;
+async function init(s) {
   story = s; starts = []; total = 0;
   for (const sc of s.scenes) { starts.push(total); total += sc.dur; }
+  const srcs = new Set();
+  for (const sc of s.scenes) {
+    if (sc.img) srcs.add(sc.img);
+    if (sc.bg) srcs.add(sc.bg);
+    for (const p of sc.people || []) srcs.add(p.img);
+  }
+  await Promise.all([...srcs].map(src => new Promise((ok, bad) => {
+    const im = new Image(); im.onload = () => { IMG[src] = im; ok(); }; im.onerror = () => bad(new Error('image failed: ' + src)); im.src = src;
+  })));
+  // film grain tile
+  GRAIN = document.createElement('canvas'); GRAIN.width = GRAIN.height = 256;
+  const g = GRAIN.getContext('2d'), d = g.createImageData(256, 256);
+  for (let i = 0; i < d.data.length; i += 4) { const v = rand(i * 0.37 + 1) * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  g.putImageData(d, 0, 0);
   return total;
+}
+
+// ---------- photo helpers ----------
+// Draw image to cover rect (x,y,w,h); focus = [fx, fy] point of interest (0..1); zoom >= 1.
+function drawCover(im, x, y, w, h, focus = [0.5, 0.4], zoom = 1, pan = [0, 0]) {
+  const sc = Math.max(w / im.width, h / im.height) * zoom;
+  const dw = im.width * sc, dh = im.height * sc;
+  let dx = x + w / 2 - focus[0] * dw + pan[0], dy = y + h / 2 - focus[1] * dh + pan[1];
+  dx = Math.min(x, Math.max(x + w - dw, dx)); dy = Math.min(y, Math.max(y + h - dh, dy));
+  ctx.drawImage(im, dx, dy, dw, dh);
+}
+// Slow Ken Burns move across the scene; dir picks the drift.
+function kenBurns(sc, im, lt, x = 0, y = 0, w = W, h = H) {
+  const p = clamp(lt / sc.dur), z0 = sc.zoom ? sc.zoom[0] : 1.04, z1 = sc.zoom ? sc.zoom[1] : 1.16;
+  const drift = sc.drift || [-30, -20];
+  const f0 = sc.focus || [0.5, 0.4], f1 = sc.focusTo || f0, e = p * p * (3 - 2 * p);
+  drawCover(im, x, y, w, h, [f0[0] + (f1[0] - f0[0]) * e, f0[1] + (f1[1] - f0[1]) * e], z0 + (z1 - z0) * p, sc.focusTo ? [0, 0] : [drift[0] * p, drift[1] * p]);
+}
+// Cinematic grade: darken top/bottom for text, brand tint, vignette.
+function grade(strength = 1) {
+  let g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, `rgba(11,15,30,${0.85 * strength})`); g.addColorStop(0.28, 'rgba(11,15,30,0.15)');
+  g.addColorStop(0.55, 'rgba(11,15,30,0.05)'); g.addColorStop(0.78, `rgba(11,15,30,${0.75 * strength})`);
+  g.addColorStop(1, `rgba(11,15,30,${0.92 * strength})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = 'rgba(60,40,140,0.35)'; ctx.fillRect(0, 0, W, H); ctx.restore();
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.75);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.55)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
+function grain(t) {
+  if (!GRAIN) return;
+  ctx.save(); ctx.globalAlpha = 0.07; ctx.globalCompositeOperation = 'overlay';
+  const ox = -Math.floor(rand(Math.floor(t * 30)) * 256), oy = -Math.floor(rand(Math.floor(t * 30) + 9) * 256);
+  for (let x = ox; x < W; x += 256) for (let y = oy; y < H; y += 256) ctx.drawImage(GRAIN, x, y);
+  ctx.restore();
+}
+// Lower-third name label
+function nameTag(name, role, x, y, lt, d = 0.4, scale = 1) {
+  const p = easeOut((lt - d) / 0.35); if (p <= 0) return;
+  ctx.save(); ctx.globalAlpha = p;
+  ctx.font = `900 ${44 * scale}px ${FONT}`; const nw = ctx.measureText(name).width;
+  ctx.font = `700 ${30 * scale}px ${FONT}`; const rw = role ? ctx.measureText(role).width : 0;
+  const w = Math.max(nw, rw) + 48 * scale;
+  ctx.fillStyle = C.acc; ctx.fillRect(x, y, 10 * scale, (role ? 104 : 66) * scale);
+  ctx.fillStyle = 'rgba(11,15,30,0.82)'; ctx.fillRect(x + 10 * scale, y, (w) * p, (role ? 104 : 66) * scale);
+  ctx.beginPath(); ctx.rect(x, y, w + 10 * scale, 110 * scale); ctx.clip();
+  ctx.fillStyle = '#fff'; ctx.font = `900 ${44 * scale}px ${FONT}`; ctx.fillText(name, x + 32 * scale, y + 50 * scale);
+  if (role) { ctx.fillStyle = C.acc; ctx.font = `700 ${30 * scale}px ${FONT}`; ctx.fillText(role, x + 32 * scale, y + 88 * scale); }
+  ctx.restore();
+}
+function credit(text) {
+  if (!text) return;
+  ctx.save(); ctx.font = `600 22px ${FONT}`; ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.translate(W - 40, 1500); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'left';
+  ctx.fillText('PHOTO: ' + text.toUpperCase(), 0, 0); ctx.restore();
+}
+// Short headline at top of photo scenes
+function headline(sc, lt, y = 300) {
+  if (sc.kicker) kicker(sc.kicker, y, lt, sc.kickerColor === 'cool' ? C.cool : C.hot);
+  if (sc.title) drawText(sc.title, { y: y + 90, size: sc.titleSize || 100, delay: 0.15, stagger: 0.07 }, lt);
+}
+
+// ---------- karaoke captions (spoken words, synced to the voiceover) ----------
+function captions(sc, lt) {
+  if (!sc.words || !sc.words.length || sc.noCaptions) return;
+  // group words into chunks of <= 3, breaking after punctuation
+  if (!sc._chunks) {
+    sc._chunks = []; let cur = [];
+    for (const w of sc.words) { cur.push(w); if (cur.length === 3 || /[.,?!:;]$/.test(w.w)) { sc._chunks.push(cur); cur = []; } }
+    if (cur.length) sc._chunks.push(cur);
+  }
+  let chunk = null;
+  for (const c of sc._chunks) if (lt >= c[0].s - 0.05) chunk = c;
+  if (!chunk || lt > chunk[chunk.length - 1].e + 0.6) return;
+  const size = 84; ctx.font = `900 ${size}px ${FONT}`;
+  const words = chunk.map(w => ({ ...w, t: w.w.toUpperCase().replace(/[,;:]$/, '') }));
+  const sp = ctx.measureText(' ').width * 1.7;
+  const widths = words.map(w => ctx.measureText(w.t).width);
+  let total = widths.reduce((a, b) => a + b, 0) + sp * (words.length - 1);
+  const maxW = SAFE.right - SAFE.left, sc2 = total > maxW ? maxW / total : 1;
+  const cy = sc.capY || 1330, pop = backOut((lt - chunk[0].s + 0.05) / 0.18);
+  ctx.save(); ctx.translate((SAFE.left + SAFE.right) / 2, cy); ctx.scale(sc2 * (0.85 + 0.15 * pop), sc2 * (0.85 + 0.15 * pop));
+  let x = -total / 2;
+  words.forEach((w, i) => {
+    const active = lt >= w.s && lt < (words[i + 1] ? words[i + 1].s : w.e + 0.6);
+    ctx.lineJoin = 'round'; ctx.lineWidth = 16; ctx.strokeStyle = '#000';
+    ctx.save();
+    if (active) { ctx.translate(x + widths[i] / 2, -size * 0.3); ctx.scale(1.06, 1.06); ctx.translate(-(x + widths[i] / 2), size * 0.3); }
+    ctx.strokeText(w.t, x, 0);
+    ctx.fillStyle = active ? C.acc : '#fff'; ctx.fillText(w.t, x, 0);
+    ctx.restore();
+    x += widths[i] + sp;
+  });
+  ctx.restore();
 }
 
 // ---------- easing / helpers ----------
@@ -260,6 +371,7 @@ const SCENES = {
     drawText(sc.text, { y: 1110, size: 64, weight: 700, delay: 0.6, stagger: 0.045, color: C.ink }, lt);
   },
   list(sc, lt) {
+    if (sc.bg) { kenBurns(sc, IMG[sc.bg], lt); ctx.fillStyle = 'rgba(11,15,30,0.62)'; ctx.fillRect(0, 0, W, H); grade(1); }
     let y = drawText(sc.title, { y: 360, size: 84, delay: 0, stagger: 0.05 }, lt) + 50;
     const n = sc.items.length, step = Math.min(1.0, (sc.dur - 1.6) / n);
     sc.items.forEach((it, i) => {
@@ -306,7 +418,37 @@ const SCENES = {
     }
     drawText(sc.text, { y: 1110, size: 72, weight: 800, delay: 1.5, stagger: 0.06 }, lt);
   },
+  photo(sc, lt) {
+    kenBurns(sc, IMG[sc.img], lt); grade(sc.grade ?? 1);
+    headline(sc, lt);
+    if (sc.label) nameTag(sc.label.name, sc.label.role, SAFE.left, 1080, lt, 0.5);
+    credit(sc.credit);
+  },
+  trio(sc, lt) {
+    // three portraits as vertical panels sliding in one after another
+    const n = sc.people.length, pw = W / n;
+    sc.people.forEach((p, i) => {
+      const d = 0.12 * i, q = easeOut((lt - d) / 0.45);
+      if (q <= 0) return;
+      ctx.save(); ctx.beginPath(); ctx.rect(i * pw, 0, pw + 1, H); ctx.clip();
+      ctx.translate(0, (1 - q) * (i % 2 ? -1 : 1) * 500); ctx.globalAlpha *= q;
+      const z = 1.1 + 0.08 * clamp(lt / sc.dur);
+      drawCover(IMG[p.img], i * pw, 0, pw, H, p.focus || [0.5, 0.35], z);
+      ctx.restore();
+    });
+    grade(1);
+    ctx.fillStyle = C.bg1; for (let i = 1; i < n; i++) ctx.fillRect(i * pw - 4, 0, 8, H);
+    sc.people.forEach((p, i) => {
+      const q = easeOut((lt - 0.5 - 0.12 * i) / 0.3); if (q <= 0) return;
+      ctx.save(); ctx.globalAlpha *= q; ctx.font = `900 ${fitSize(p.name, 46, pw - 30)}px ${FONT}`; ctx.textAlign = 'center';
+      ctx.fillStyle = C.acc; ctx.fillRect(i * pw + 30, 1118, pw - 60, 6);
+      ctx.fillStyle = '#fff'; ctx.fillText(p.name, i * pw + pw / 2, 1100); ctx.restore();
+    });
+    headline(sc, lt);
+    credit(sc.credit);
+  },
   cta(sc, lt) {
+    if (sc.bg) { kenBurns(sc, IMG[sc.bg], lt); ctx.fillStyle = 'rgba(11,15,30,0.55)'; ctx.fillRect(0, 0, W, H); grade(1); }
     drawText(sc.text, { y: 420, size: 108, delay: 0, stagger: 0.08 }, lt);
     // comment bubble
     const p = backOut((lt - 1.2) / 0.4);
@@ -362,6 +504,8 @@ function render(t) {
   ctx.globalAlpha = Math.min(inP, outP);
   SCENES[sc.type](sc, lt);
   ctx.restore();
+  captions(sc, lt);
+  grain(t);
   // white flash on cut
   if (lt < 0.08 && i > 0) { ctx.fillStyle = `rgba(255,255,255,${0.25 * (1 - lt / 0.08)})`; ctx.fillRect(0, 0, W, H); }
   chrome(t);

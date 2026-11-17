@@ -1,0 +1,169 @@
+{
+  "brand": "DAILY DROP",
+  "date": "NOV 17, 2026",
+  "voice": "af_heart",
+  "speed": 1.2,
+  "assets": "assets/2026-11-17-apec",
+  "caption": "Trump, Xi and Putin meet THURSDAY, for the first time ever as a trio 🇺🇸🇨🇳🇷🇺 And Kim Jong-un might show up too 👀 Will it change anything? 👇 #news #trump #xijinping #putin #kimjongun #apec #worldnews #dailydrop",
+  "sources": [
+    "https://www.aljazeera.com/news/2026/11/14/trump-xi-putin-trilateral-meeting-at-apec-what-to-expect",
+    "https://www.scmp.com/news/china/diplomacy/article/3374523/china-us-russia-trilateral-set-thursday-beijing",
+    "https://www.bloomberg.com/news/articles/2026-11-16/trump-says-he-may-meet-north-korea-s-kim-jong-un-in-china",
+    "https://www.koreatimes.co.kr/world/20261117/trump-says-he-may-meet-with-kim-jong-un-while-in-china",
+    "https://www.detroitnews.com/story/news/world/2026/11/17/trump-kim-meeting-on-apec-sidelines-appears-more-likely-analysts-say/92827194007/"
+  ],
+  "scenes": [
+    {
+      "type": "trio",
+      "dur": 3,
+      "kicker": "THIS THURSDAY",
+      "title": "*First time ever.*",
+      "people": [
+        {
+          "img": "trump.jpg",
+          "name": "TRUMP",
+          "focus": [
+            0.45,
+            0.33
+          ]
+        },
+        {
+          "img": "xi.jpg",
+          "name": "XI",
+          "focus": [
+            0.5,
+            0.33
+          ]
+        },
+        {
+          "img": "putin.jpg",
+          "name": "PUTIN",
+          "focus": [
+            0.5,
+            0.33
+          ]
+        }
+      ],
+      "say": "The three most powerful men on Earth are about to meet in one room. For the first time ever.",
+      "display": "The three most powerful men on Earth are about to meet in one room. For the first time ever."
+    },
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "trump_xi.jpg",
+      "focus": [
+        0.52,
+        0.42
+      ],
+      "zoom": [
+        1.0,
+        1.12
+      ],
+      "kicker": "SHENZHEN, CHINA",
+      "kickerColor": "cool",
+      "title": "APEC summit",
+      "say": "They meet Thursday, at the A-peck summit in Shen-jen, China.",
+      "display": "They meet Thursday, at the APEC summit in Shenzhen, China."
+    },
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "trump_xi.jpg",
+      "focus": [
+        0.47,
+        0.3
+      ],
+      "zoom": [
+        1.35,
+        1.5
+      ],
+      "kicker": "FIRST UP",
+      "title": "Trump & Xi, *one-on-one*",
+      "label": {
+        "name": "DONALD TRUMP & XI JINPING",
+        "role": "Busan, South Korea · Oct 2025"
+      },
+      "say": "Trump is expected to sit down with Shee first. Then Putin joins.",
+      "display": "Trump is expected to sit down with Xi first. Then Putin joins."
+    },
+    {
+      "type": "list",
+      "dur": 3,
+      "bg": "putin.jpg",
+      "focus": [
+        0.5,
+        0.35
+      ],
+      "mark": "dot",
+      "capY": 1420,
+      "title": "The agenda? *Nobody's saying.*",
+      "items": [
+        "Ukraine",
+        "The war in Iran",
+        "Nuclear weapons"
+      ],
+      "say": "The agenda? China hasn't said. But Trump has hinted at Ukraine, the war in Iran, and nuclear weapons."
+    },
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "kim.jpg",
+      "focus": [
+        0.5,
+        0.3
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "kicker": "THE WILDCARD",
+      "title": "Kim Jong-un?",
+      "label": {
+        "name": "KIM JONG-UN",
+        "role": "Leader, North Korea"
+      },
+      "say": "And the wildcard? Trump says he might also meet Kim Jong-un in China. But that depends on Shee.",
+      "display": "And the wildcard? Trump says he might also meet Kim Jong-un in China. But that depends on Xi."
+    },
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "trump_kim1.jpg",
+      "focus": [
+        0.33,
+        0.45
+      ],
+      "focusTo": [
+        0.7,
+        0.45
+      ],
+      "zoom": [
+        1.0,
+        1.05
+      ],
+      "kicker": "BUT",
+      "kickerColor": "cool",
+      "title": "*Nothing* is confirmed",
+      "label": {
+        "name": "TRUMP & KIM",
+        "role": "Korean DMZ · June 2019"
+      },
+      "say": "But North Korea isn't even an A-peck member. And nothing is confirmed.",
+      "display": "But North Korea isn't even an APEC member. And nothing is confirmed."
+    },
+    {
+      "type": "cta",
+      "dur": 3,
+      "bg": "trump_xi.jpg",
+      "focus": [
+        0.52,
+        0.4
+      ],
+      "text": "Will this meeting *change anything?*",
+      "sub": "Tell me in the comments",
+      "follow": "Follow for the world in 30 seconds",
+      "say": "So, will this meeting change anything? Comment, and follow for more.",
+      "noCaptions": true
+    }
+  ]
+}

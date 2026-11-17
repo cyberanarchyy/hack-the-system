@@ -15,6 +15,18 @@ const timedPath = path.join(outDir, name + '.timed.json');
 const vo = path.join(outDir, name + '.vo.wav');
 if (hasVO) execFileSync('python3', [path.join(__dirname, 'voice.py'), storyPath, outDir], { stdio: 'inherit' });
 const story = hasVO ? JSON.parse(fs.readFileSync(timedPath, 'utf8')) : raw;
+// resolve photos relative to the story's asset folder; pull credits from <img>.credit.txt
+const assetDir = path.resolve(__dirname, raw.assets || '.');
+const creditOf = f => { try { return fs.readFileSync(path.join(assetDir, f) + '.credit.txt', 'utf8').split('\n')[0].replace(/ \/ Wikimedia Commons$/, ''); } catch { return ''; } };
+const shortCredit = c => c.replace(/^(.*?)( \/ .*)$/, (m, a, b) => a.split(/[,(]/)[0].trim() + b);
+for (const sc of story.scenes) {
+  const used = [sc.img, sc.bg, ...(sc.people || []).map(p => p.img)].filter(Boolean);
+  if (sc.credit === undefined && used.length) sc.credit = [...new Set(used.map(f => shortCredit(creditOf(f))))].filter(Boolean).join(' · ');
+  const abs = f => 'data:image/jpeg;base64,' + fs.readFileSync(path.join(assetDir, f)).toString('base64');
+  if (sc.img) sc.img = abs(sc.img);
+  if (sc.bg) sc.bg = abs(sc.bg);
+  for (const p of sc.people || []) p.img = abs(p.img);
+}
 const outMp4 = process.argv[3] || path.join(outDir, name + '.mp4');
 const wav = path.join(outDir, name + '.wav');
 
