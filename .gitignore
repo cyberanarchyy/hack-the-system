@@ -6,3 +6,5 @@ build/
 .env
 *.txt.bak
 hts_*.txt
+.wrangler/
+node_modules/

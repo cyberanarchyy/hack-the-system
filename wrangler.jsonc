@@ -1,0 +1,11 @@
+// Cloudflare Workers config: serves the Clip Heist website + app as static files
+// at getclipheist.app. Deployed automatically by Cloudflare when this branch changes.
+{
+  "name": "clip-heist",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./clip-heist",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  }
+}
