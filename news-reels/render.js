@@ -59,6 +59,11 @@ const wav = path.join(outDir, name + '.wav');
   await new Promise(r => ff.on('close', r));
   await browser.close();
 
+  // small copy for phone download / upload: smooth the film grain (it bloats files), CRF 26
+  const share = outMp4.replace(/\.mp4$/, '-share.mp4');
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', outMp4, '-vf', 'hqdn3d=4:3:6:4', '-c:v', 'libx264', '-preset', 'slow', '-crf', '26',
+    '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', share]);
+  console.log('share copy:', share, (fs.statSync(share).size / 1048576).toFixed(1) + ' MB');
   // thumbnail + caption file alongside the video
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(story.thumbAt || 2.5), '-i', outMp4, '-frames:v', '1', outMp4.replace(/\.mp4$/, '.jpg')]);
   fs.writeFileSync(outMp4.replace(/\.mp4$/, '.caption.txt'),

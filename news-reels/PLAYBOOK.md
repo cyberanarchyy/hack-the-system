@@ -35,7 +35,7 @@ Then pull 7 frames (one per scene) with ffmpeg into a contact sheet and look at 
 faces must be in frame, nothing important below y=1500 or in the right 170 px. Fix and re-render if needed.
 
 ## 5. Deliver
-- Send the user `out/<file>.mp4` with SendUserFile (status "proactive").
+- Send the user `out/<file>-share.mp4` (the small copy; the full-size file is too big to download in the app) with SendUserFile (status "proactive").
 - In your final message: the TikTok caption, a YouTube Shorts title (`... #shorts #news`, under 100 chars),
   a one-line "post by" note if the story is time-sensitive, and the sources as links.
 - Commit the story JSON + `assets/<story-name>/` and push to `claude/charming-noether-dkzhj4`
