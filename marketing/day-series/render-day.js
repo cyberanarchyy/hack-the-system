@@ -1,13 +1,15 @@
 // Usage: node render-day.js <html> <bg.mp4> <out-silent.mp4> '<json params>'
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
-const [html, bg, out, params] = process.argv.slice(2);
+const [html, bg, out, params, ampFile] = process.argv.slice(2);
+const AMP = ampFile ? JSON.parse(require('fs').readFileSync(ampFile, 'utf8')) : [];
 const DUR = 18, FPS = 30;
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
   await p.goto('file://' + html + '#' + encodeURIComponent(params || '{}'));
   await p.waitForTimeout(800);
+  await p.evaluate((a) => { window.AMP = a; }, AMP);
   const ff = spawn('ffmpeg', ['-loglevel', 'error', '-y', '-i', bg, '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-',
     '-filter_complex', '[0:v]scale=1080:1920,setsar=1[b];[b][1:v]overlay=0:0:shortest=1[v]', '-map', '[v]', '-c:v', 'libx264', '-crf', '19', '-preset', 'medium', '-pix_fmt', 'yuv420p', '-t', String(DUR), out]);
   for (let i = 0; i < DUR * FPS; i++) {

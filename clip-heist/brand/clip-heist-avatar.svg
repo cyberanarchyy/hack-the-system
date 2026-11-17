@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 900" id="avatar">
+  <defs>
+    <linearGradient id="vis" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff3ea5"/><stop offset="1" stop-color="#ff8a3d"/></linearGradient>
+    <linearGradient id="hood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2540"/><stop offset="1" stop-color="#14121f"/></linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#262138"/><stop offset="1" stop-color="#0f0d18"/></linearGradient>
+    <radialGradient id="face" cx="0.5" cy="0.45" r="0.6"><stop offset="0" stop-color="#1b1828"/><stop offset="1" stop-color="#07060c"/></radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <!-- body / hoodie -->
+  <g id="bodyG">
+    <path d="M90 900 C 100 700, 210 600, 400 595 C 590 600, 700 700, 710 900 Z" fill="url(#body)"/>
+    <path d="M300 610 C 340 680, 460 680, 500 610" fill="none" stroke="#3a3354" stroke-width="10"/>
+    <!-- drawstrings -->
+    <path d="M360 640 L 352 760" stroke="#ff3ea5" stroke-width="9" stroke-linecap="round"/>
+    <path d="M440 640 L 448 760" stroke="#ff8a3d" stroke-width="9" stroke-linecap="round"/>
+    <circle cx="352" cy="768" r="9" fill="#ffd23f"/><circle cx="448" cy="768" r="9" fill="#ffd23f"/>
+    <!-- pocket line -->
+    <path d="M250 860 Q 400 820 550 860" fill="none" stroke="#2f2945" stroke-width="8"/>
+  </g>
+  <!-- phone in hands -->
+  <g id="phoneG" transform="translate(575 735) rotate(-12)">
+    <rect x="-70" y="-120" width="150" height="270" rx="26" fill="#0b0b10" stroke="#3a3a4a" stroke-width="6"/>
+    <rect x="-58" y="-106" width="126" height="242" rx="18" fill="#140a1c"/>
+    <g transform="translate(5 15) scale(0.22) translate(-256 -256)">
+      <rect x="166" y="84" width="180" height="344" rx="34" fill="none" stroke="url(#vis)" stroke-width="26"/>
+      <path d="M226 196v120l100-60z" fill="url(#vis)"/>
+    </g>
+    <!-- glove/hand -->
+    <path d="M-80 60 C -110 40, -110 110, -60 130 L 20 150 C 40 120, 0 70, -80 60 Z" fill="#1d1a2b" stroke="#2f2945" stroke-width="4"/>
+  </g>
+  <!-- head -->
+  <g id="headG">
+    <!-- hood -->
+    <path d="M400 70 C 230 70, 160 210, 165 360 C 170 500, 250 600, 400 610 C 550 600, 630 500, 635 360 C 640 210, 570 70, 400 70 Z" fill="url(#hood)"/>
+    <!-- face mask (balaclava) -->
+    <path d="M400 150 C 290 150, 240 250, 245 360 C 250 470, 310 545, 400 550 C 490 545, 550 470, 555 360 C 560 250, 510 150, 400 150 Z" fill="url(#face)"/>
+    <!-- headphones -->
+    <path d="M190 330 C 190 120, 610 120, 610 330" fill="none" stroke="#ff3ea5" stroke-width="22" stroke-linecap="round" opacity="0.95"/>
+    <rect x="150" y="300" width="70" height="130" rx="30" fill="#ff3ea5"/>
+    <rect x="580" y="300" width="70" height="130" rx="30" fill="#ff8a3d"/>
+    <rect x="162" y="318" width="20" height="94" rx="10" fill="#ffd23f" opacity="0.8"/>
+    <rect x="618" y="318" width="20" height="94" rx="10" fill="#ffd23f" opacity="0.8"/>
+    <!-- visor -->
+    <g filter="url(#glow)">
+      <rect x="262" y="290" width="276" height="92" rx="46" fill="url(#vis)"/>
+    </g>
+    <rect x="272" y="298" width="256" height="20" rx="10" fill="#fff" opacity="0.28"/>
+    <!-- eyes (scaleY for blinks) -->
+    <g id="eyes">
+      <rect id="eyeL" x="322" y="318" width="44" height="40" rx="20" fill="#16000c"/>
+      <rect id="eyeR" x="434" y="318" width="44" height="40" rx="20" fill="#16000c"/>
+    </g>
+    <!-- LED mouth (equalizer bars) -->
+    <g id="mouth" filter="url(#glow)"></g>
+  </g>
+</svg>
