@@ -170,8 +170,9 @@ const Analyzer = (() => {
     onProgress(0.01, 'Opening video…');
     const v = await loadVideo(url);
     try {
-      const duration = v.duration;
-      if (!Number.isFinite(duration) || duration <= 0) throw new Error('Couldn’t read the video length.');
+      const full = v.duration;
+      if (!Number.isFinite(full) || full <= 0) throw new Error('Couldn’t read the video length.');
+      const duration = Math.min(full, opts.maxDuration || Infinity); // part of the video to scan
       const cells = Math.max(1, Math.ceil(duration / STEP));
       onProgress(0.02, 'Listening for action…');
       const audio = await audioFeatures(blob, cells, opts);
@@ -234,7 +235,7 @@ const Analyzer = (() => {
       const thumb = await thumbAt(v, Math.min(duration * 0.3, highlights[0] ? highlights[0].peak : duration * 0.3));
       onProgress(1, 'Done');
       return {
-        duration, width: v.videoWidth, height: v.videoHeight,
+        duration: full, scanned: duration, width: v.videoWidth, height: v.videoHeight,
         highlights, curve, thumb, audioAnalyzed: !!audio,
       };
     } finally {

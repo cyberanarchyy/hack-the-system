@@ -1,5 +1,11 @@
 # Clip Heist 🎬
 
+> **Layout:** `index.html` + `assets/` is the marketing website (landing page, pricing, waitlist). The app lives in [`app/`](app/). `terms.html` and `privacy.html` are drafts. Brand files and promo reels are in `brand/`.
+>
+> **Waitlist:** set `WAITLIST_ENDPOINT` in `assets/site.js` to a Formspree form URL to start collecting emails.
+>
+> **Free vs Pro:** limits live in `app/plan.js`. Until payments are connected, Pro is a local test switch: in the app, open Settings and tap the bottom text 5 times to show Developer options.
+
 Turn long GTA 6 gameplay recordings into YouTube Shorts on your phone. It finds the best moments, makes them vertical, adds captions and effects, and exports a 1080×1920 video ready to post.
 There's no account and no server. Your videos never leave your phone.
 
@@ -31,14 +37,14 @@ Use your own gameplay. Re-uploading other creators' videos gets Shorts claimed o
 It's plain HTML/CSS/JS, so any static host works. With GitHub Pages:
 
 1. On GitHub, go to **Settings → Pages** and deploy from your branch, `/ (root)` folder.
-2. Open `https://<your-username>.github.io/hack-the-system/clip-heist/` on your phone.
+2. Open `https://<your-username>.github.io/hack-the-system/clip-heist/` for the website, or `.../clip-heist/app/` for the app.
 3. Add it to your home screen: **iPhone (Safari)** Share → *Add to Home Screen*. **Android (Chrome)** ⋮ → *Install app*.
 
 ### Run locally
 
 ```bash
 cd clip-heist
-python3 -m http.server 8000
+python3 -m http.server 8000   # website at /, app at /app/
 ```
 
 ## Notes and limits

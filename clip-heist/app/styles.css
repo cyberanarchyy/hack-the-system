@@ -186,3 +186,32 @@ input[type=range] { width: 100%; margin-top: 8px; accent-color: var(--accent); h
 .cap-top .icon-btn svg { width: 18px; height: 18px; }
 .cap-text { display: block; width: 100%; margin: 6px 0 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 16px; }
 .cap .row.gap { margin: 8px 0 2px; }
+
+/* ---------- Free vs Pro ---------- */
+.pro-badge { display: inline-block; font-weight: 900; font-size: .75rem; letter-spacing: 2px; padding: 4px 10px; border-radius: 99px; color: #1a0010; background: linear-gradient(90deg, #ff3ea5, #ff8a3d); }
+.upsell { text-align: center; }
+.upsell h2 { margin: 12px 0 6px; font-size: 1.35rem; }
+.perks { list-style: none; padding: 0; margin: 14px 0; text-align: left; }
+.perks li { padding: 7px 0 7px 28px; position: relative; font-size: .92rem; border-bottom: 1px solid var(--line); }
+.perks li::before { content: '✓'; position: absolute; left: 4px; color: var(--accent); font-weight: 900; }
+.price { margin: 10px 0 4px; }
+.price b { font-size: 1.6rem; }
+.notice { display: flex; align-items: center; gap: 10px; justify-content: space-between; font-size: .9rem; border-color: rgba(255,210,63,.35); background: rgba(255,210,63,.06); }
+.notice .btn { flex: none; }
+.section-h h2 small { font-weight: 500; font-size: .78rem; margin-left: 6px; }
+.hl.locked { cursor: pointer; }
+.hl.locked .hl-thumb img { filter: blur(6px) brightness(.6); transform: scale(1.1); }
+.hl.locked .hl-thumb span { left: 50%; top: 50%; right: auto; bottom: auto; transform: translate(-50%, -50%); font-size: 1.4rem; background: none; }
+.btn.pro, .btn.pro-cta { border-color: rgba(255,62,165,.5); color: var(--accent); background: rgba(255,62,165,.08); }
+.chip[data-lock] { opacity: .65; }
+.locked-row { width: 100%; background: none; border: 0; border-bottom: 1px solid var(--line); text-align: left; color: var(--text); font: inherit; cursor: pointer; }
+.locked-row .lk { width: 22px; text-align: center; flex: none; }
+.locked-row > span:nth-child(2) { flex: 1; }
+.pro-tag { font-size: .65rem; font-weight: 900; letter-spacing: 1px; padding: 3px 7px; border-radius: 6px; background: rgba(255,62,165,.15); color: var(--accent); flex: none; }
+.locked-panel { text-align: center; padding: 26px 12px; }
+.locked-panel h3 { margin: 12px 0 6px; }
+.locked-panel .btn { margin-top: 10px; }
+.campick { display: block; width: 100%; margin: 8px 0; border-radius: 10px; background: #000; touch-action: none; cursor: move; }
+.plan { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.plan.pro { border-color: rgba(255,62,165,.5); background: linear-gradient(90deg, rgba(255,62,165,.12), rgba(255,138,61,.08)); }
+.dev { border-style: dashed; }

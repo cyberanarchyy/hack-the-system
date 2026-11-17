@@ -71,16 +71,19 @@
 
   // ---------- content ideas ----------
   const HOOKS = {
-    boom: ['WAIT FOR IT… 💥', 'THAT ESCALATED FAST', 'HE DID NOT SEE THAT COMING', 'BIGGEST BOOM YET?', 'WORST DAY IN VICE CITY'],
-    chaos: ['FULL SEND 🏎️', 'VICE CITY CHAOS', 'THE COPS GAVE UP', 'NO BRAKES. NO PLAN.', 'CLEANEST ESCAPE EVER?'],
-    loud: ['TURN YOUR SOUND ON 🔊', 'LISTEN TO THIS…', 'IT GOT LOUD'],
-    any: ['GTA 6 IS UNREAL', 'NO WAY THAT WORKED', 'RATE THIS 1–10', 'I CAN’T BELIEVE THIS HAPPENED', 'WATCH TILL THE END', 'THE PHYSICS IN THIS GAME…', 'ONLY IN GTA 6'],
+    boom: ['WAIT FOR IT… 💥', 'THAT ESCALATED FAST', 'HE DID NOT SEE THAT COMING', 'BIGGEST BOOM YET?', 'WORST DAY EVER'],
+    chaos: ['FULL SEND 🏎️', 'PURE CHAOS', 'THE COPS GAVE UP', 'NO BRAKES. NO PLAN.', 'CLEANEST ESCAPE EVER?'],
+    loud: ['TURN YOUR SOUND ON 🔊', 'HIS REACTION 💀', 'CHAT WENT CRAZY', 'LISTEN TO THIS…'],
+    any: ['THIS GAME IS UNREAL', 'NO WAY THAT WORKED', 'RATE THIS 1–10', 'I CAN’T BELIEVE THIS HAPPENED', 'WATCH TILL THE END', 'THE PHYSICS IN THIS GAME…', 'CLIP OF THE YEAR?'],
   };
   const PAYOFFS = ['💀💀💀', 'NAH 😭', 'BRO WHAT', 'UNREAL 🔥', 'CALCULATED.', 'RIP 🪦', 'NOT LIKE THIS'];
-  const TITLES = [
-    '{hook} | GTA 6', 'GTA 6 moments that hit different', 'This is why GTA 6 was worth the wait',
-    'GTA 6 but nothing goes to plan', 'Vice City doesn’t play fair 😭', 'I can’t stop replaying this GTA 6 clip',
-    'Most chaotic 20 seconds in GTA 6', 'GTA 6 physics are actually insane', 'Did that really just happen in GTA 6?',
+  const TITLES_ANY = [
+    '{hook}', 'Nobody expected this 😳', 'I can’t stop replaying this', 'Most chaotic 20 seconds ever',
+    'The timing on this 💀', 'Did that really just happen?', 'Wait for the ending…', 'This is why I clip everything',
+  ];
+  const TITLES_GAME = [
+    '{hook} | {game}', '{game} moments that hit different', '{game} but nothing goes to plan',
+    '{game} physics are actually insane', 'Did that really just happen in {game}?', 'Best {game} clip this week?',
   ];
 
   function suggestHook(tags) {
@@ -90,21 +93,24 @@
   }
   const titleCase = (s) => s.toLowerCase().replace(/(^|\s)\S/g, (m) => m.toUpperCase());
   function suggestTitle(clip) {
-    const hook = (clip.text.hook || '').replace(/[^\w\s’'?!]/g, '').trim();
-    let t = pick(TITLES);
-    if (t.includes('{hook}')) t = hook ? t.replace('{hook}', titleCase(hook)) : 'GTA 6 moments that hit different';
+    const hook = titleCase((clip.text.hook || '').replace(/[^\w\s’'?!]/g, '').trim());
+    const game = (settings.game || '').trim();
+    let t = pick(game ? [...TITLES_GAME, ...TITLES_ANY] : TITLES_ANY);
+    if (t.includes('{hook}') && !hook) t = game ? '{game} moments that hit different' : 'Nobody expected this 😳';
+    t = t.replace('{hook}', hook).replace(/\{game\}/g, game);
     return (t + ' #shorts').slice(0, 100);
   }
   function suggestDescription(clip) {
     const tags = settings.hashtags.trim();
-    const handle = settings.handle ? `\nFollow ${settings.handle} for daily GTA 6 clips 🎮` : '';
+    const what = (settings.game || '').trim() ? `${settings.game.trim()} clips` : 'clips';
+    const handle = settings.handle ? `\nFollow ${settings.handle} for daily ${what} 🎮` : '';
     return `${clip.post.title || suggestTitle(clip)}${handle}\n\n${tags}`;
   }
 
   // ---------- state ----------
   const DEFAULT_SETTINGS = {
-    handle: '', preRoll: 12, postRoll: 5, quality: '1080', fps: 30,
-    hashtags: '#GTA6 #GTAVI #ViceCity #GTA6Gameplay #Gaming #Shorts',
+    handle: '', game: '', preRoll: 12, postRoll: 5, quality: '1080', fps: 30,
+    hashtags: '#gaming #gamingclips #clips #shorts',
     template: {
       frame: { layout: 'fill', zoom: 1, panX: 0.5, panY: 0.5 },
       text: { style: 'classic', size: 86, y: 0.17, payoffStyle: 'gold', payoffY: 0.72, capStyle: 'boxed', capSize: 66, capY: 0.6, capPop: true, capUpper: true },
@@ -133,6 +139,68 @@
   const saveSource = (s) => DB.put('sources', s);
   const saveClip = (c) => DB.put('clips', c);
 
+  // ---------- Free vs Pro ----------
+  const isPro = () => Plan.isPro();
+  const LOCK = '🔒';
+  const UPSELL = {
+    highlights: ['Unlock every highlight', 'Free shows your top 3 moments. Pro unlocks all of them.'],
+    length: ['Scan full sessions', 'Free scans the first 10 minutes of a video. Pro scans hours-long streams and sessions.'],
+    batch: ['Make & export in bulk', 'Turn every highlight into a short, and export them all, in one tap.'],
+    exports: ['You’ve used your free exports', 'Free includes 3 exports a week. Pro is unlimited.'],
+    long: ['Longer shorts', 'Free shorts can be up to 30 seconds. Pro goes up to 3 minutes.'],
+    quality: ['Export in 1080p / 60 fps', 'Free exports are 720p with a watermark. Pro is full quality, no watermark.'],
+    watermark: ['Remove the watermark', 'Pro exports are clean, full 1080p, with no end card.'],
+    stream: ['Streamer layout', 'Facecam on top, gameplay below: the format every stream clip channel uses.'],
+    styles: ['All text styles', 'Gold, Neon, Sunset, Boxed and Alert styles for hooks and captions.'],
+    payoff: ['Reaction text', 'Pop a reaction like “NAH 😭” on screen exactly when the big moment hits.'],
+    captions: ['Captions', 'Timed, pop-in captions that keep people watching (auto-captions from speech coming soon).'],
+    fx: ['Pro effects', 'Slow-mo, camera shake and flash on the hit, plus speed control.'],
+    template: ['Saved templates', 'Save your look once and every new short starts with it.'],
+    features: ['This short uses Pro features', ''],
+  };
+  const PRO_PERKS = ['All highlights, full-length scans', 'Unlimited exports in 1080p / 60 fps, no watermark', 'Streamer layout (facecam + gameplay)', 'Captions, reaction text and all styles', 'Slow-mo, shake, flash, speed control', 'Bulk make & export, saved templates'];
+
+  function upsell(reason, extra = '') {
+    const [title, body] = UPSELL[reason] || UPSELL.features;
+    modal(`
+      <div class="upsell">
+        <div class="pro-badge">PRO</div>
+        <h2>${esc(title)}</h2>
+        <p class="muted">${esc(body)}${extra}</p>
+        <ul class="perks">${PRO_PERKS.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+        <p class="price"><b>$6.99</b>/month <span class="muted">or $49/year · 7-day free trial</span></p>
+        <a class="btn primary block" href="../#pricing" data-x="go">Get Clip Heist Pro</a>
+        ${devMode() ? '<button class="btn block" data-x="dev">🧪 Test: turn on Pro</button>' : ''}
+        <button class="btn ghost block" data-x="no">Not now</button>
+      </div>`, {
+      onMount(el, close) {
+        el.addEventListener('click', (e) => {
+          const x = e.target.closest('[data-x]');
+          if (!x && e.target !== el) return;
+          if (x && x.dataset.x === 'go') return;
+          if (x && x.dataset.x === 'dev') { Plan.setPro(true); toast('Pro test mode on'); close(); render(); return; }
+          close();
+        });
+      },
+    });
+  }
+
+  // Which Pro-only things a short uses (checked before a free export).
+  function proFeaturesUsed(c) {
+    const out = [];
+    if (c.frame.layout === 'stream') out.push('streamer layout');
+    if (c.text.style !== 'classic' && c.text.hook) out.push(Render.STYLES[c.text.style]?.label + ' text style');
+    if (c.text.payoff) out.push('reaction text');
+    if ((c.captions || []).some((x) => x.text)) out.push('captions');
+    if (c.fx.slowmo) out.push('slow-mo');
+    if (c.fx.shake) out.push('camera shake');
+    if (c.fx.flash) out.push('flash');
+    if ((c.speed || 1) !== 1) out.push('speed change');
+    return out;
+  }
+
+  const devMode = () => localStorage.getItem('clip-heist-dev') === '1';
+
   // ---------- navigation ----------
   function go(name, params = {}) {
     teardownEditor();
@@ -159,7 +227,7 @@
   function renderLibrary() {
     const list = [...sources].sort((a, b) => b.addedAt - a.addedAt);
     app.innerHTML = `
-      <header class="bar"><h1><span class="brand">Clip</span> Heist<small>GTA 6 gameplay → YouTube Shorts</small></h1></header>
+      <header class="bar"><h1><span class="brand">Clip</span> Heist<small>Gameplay &amp; streams → Shorts</small></h1></header>
       <main class="wrap">
         <label class="drop">
           <input type="file" accept="video/*" multiple hidden id="file">
@@ -168,13 +236,13 @@
         </label>
         ${list.length ? '' : `
         <div class="card how">
-          <h2>Getting your GTA 6 footage onto your phone</h2>
+          <h2>Getting your footage in</h2>
           <ol>
-            <li><b>PS5:</b> press Create → save the last 15 min–1 hr. Turn on <i>Auto-upload</i> in the PS App, then download from the app’s Game Captures.</li>
-            <li><b>Xbox:</b> press Share → record what happened. Captures show up in the Xbox app on your phone. Save them to your camera roll.</li>
-            <li><b>PC:</b> record with ShadowPlay / OBS, then AirDrop it or put it in Google Drive / iCloud.</li>
+            <li><b>PC:</b> drop in an OBS or ShadowPlay recording, or a stream VOD.</li>
+            <li><b>Streams:</b> download your VOD from Twitch (Creator Dashboard → Content → Video Producer) or Kick, then import it.</li>
+            <li><b>PS5 / Xbox:</b> save a capture, then get it from the PS App or Xbox app onto your phone or PC.</li>
           </ol>
-          <p class="hint">Use your own gameplay. Re-uploading other creators’ videos gets Shorts claimed or taken down.</p>
+          <p class="hint">Clip your own footage, or streams you have permission to clip. Lots of streamers run clipping programs that pay clippers.</p>
         </div>`}
         ${list.map(sourceCard).join('')}
       </main>
@@ -246,7 +314,7 @@
       const blob = await DB.get('blobs', 'src:' + s.id);
       if (!blob) throw new Error('Video file is missing. Import it again.');
       let last = 0;
-      const res = await Analyzer.run(blob, { ...settings, skipAudio: s.scanAttempts > 1 }, (p, msg) => {
+      const res = await Analyzer.run(blob, { ...settings, skipAudio: s.scanAttempts > 1, maxDuration: isPro() ? Infinity : Plan.LIMITS.maxSourceSeconds }, (p, msg) => {
         scanning[s.id] = { p, msg };
         if (performance.now() - last > 250) { last = performance.now(); refreshScanUI(s); }
       });
@@ -293,15 +361,26 @@
         ${s.curve && s.curve.length ? `<canvas class="heat" id="heat" height="44"></canvas><p class="hint center">Hotter = more action. Tap to jump there.</p>` : ''}
         <div class="row gap">
           <button class="btn primary" data-act="clip-here">✂️ Clip from here</button>
-          ${s.status === 'ready' && s.highlights.length ? `<button class="btn" data-act="auto-all">⚡ Make all ${s.highlights.length}</button>` : ''}
+          ${s.status === 'ready' && s.highlights.length ? `<button class="btn" data-act="auto-all">${isPro() ? '' : LOCK + ' '}⚡ Make all ${s.highlights.length}</button>` : ''}
         </div>
         <div id="scanbox">${sc ? `<div class="progress"><i style="width:${Math.round(sc.p * 100)}%"></i></div><p class="muted small">${esc(sc.msg)}</p>` : ''}</div>
         ${s.status === 'error' ? `<div class="card"><p class="bad">${esc(s.error)}</p><button class="btn" data-act="rescan">Try again</button></div>` : ''}
         ${s.note ? `<p class="hint">${esc(s.note)}</p>` : ''}
+        ${s.status === 'ready' && s.scanned && s.scanned < s.duration - 1 ? (isPro()
+          ? `<div class="card notice"><span>Scanned the first ${fmt(s.scanned)} on the free plan.</span><button class="btn sm primary" data-act="rescan">Scan full video</button></div>`
+          : `<div class="card notice"><span>Free scans the first 10 minutes of ${fmt(s.duration)}.</span><button class="btn sm" data-act="upsell" data-r="length">${LOCK} Scan all</button></div>`) : ''}
         ${s.status === 'ready' ? `
-          <div class="section-h"><h2>Top moments</h2><button class="link" data-act="rescan">Rescan</button></div>
+          <div class="section-h"><h2>Top moments ${!isPro() && s.highlights.length > Plan.LIMITS.unlockedHighlights ? `<small class="muted">${s.highlights.length} found · ${Plan.LIMITS.unlockedHighlights} unlocked</small>` : ''}</h2><button class="link" data-act="rescan">Rescan</button></div>
           ${s.highlights.length ? s.highlights.map((h, i) => {
             const made = mine.find((c) => c.highlightId === h.id);
+            if (!isPro() && i >= Plan.LIMITS.unlockedHighlights) {
+              return `<div class="card hl locked" data-act="upsell" data-r="highlights">
+                <div class="hl-thumb"><img src="${h.thumb}" alt=""><span>${LOCK}</span></div>
+                <div class="hl-meta"><b>#${i + 1}</b> <span class="muted small">${fmt(h.start)}–${fmt(h.end)}</span>
+                  <div class="tags">${h.tags.map((t) => `<span class="tag">${TAG_LABEL[t] || t}</span>`).join('')}</div>
+                  <button class="btn sm pro">${LOCK} Unlock with Pro</button></div>
+              </div>`;
+            }
             return `<div class="card hl">
               <button class="hl-thumb" data-act="preview-hl" data-i="${i}"><img src="${h.thumb}" alt=""><span>${fmt(h.peak)}</span></button>
               <div class="hl-meta">
@@ -337,6 +416,13 @@
     return `rgb(${c})`;
   }
 
+  // Heat value at time t, or null past the scanned part.
+  function curveAt(s, t) {
+    const span = s.scanned || s.duration, n = s.curve.length;
+    if (!n || t > span) return null;
+    return s.curve[clamp(Math.floor((t / span) * n), 0, n - 1)] || 0;
+  }
+
   function drawHeatStrip(canvas, s, current, range) {
     const dpr = window.devicePixelRatio || 1;
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -349,7 +435,9 @@
     const bins = Math.min(w, 300);
     for (let i = 0; i < bins; i++) {
       const t = a + ((i + 0.5) / bins) * (b - a);
-      const v = s.curve[clamp(Math.floor((t / s.duration) * n), 0, n - 1)] || 0;
+      const cv = curveAt(s, t);
+      if (cv == null) { ctx.fillStyle = '#1d1d28'; ctx.fillRect((i / bins) * w, h - 3, w / bins + 0.5, 3); continue; }
+      const v = cv;
       ctx.fillStyle = heatColor(v);
       const bh = clamp(((v + 1) / 5) * h, 3, h);
       ctx.fillRect((i / bins) * w, h - bh, w / bins + 0.5, bh);
@@ -411,9 +499,12 @@
     app.innerHTML = `
       <header class="bar"><h1>Settings</h1></header>
       <main class="wrap">
+        ${isPro() ? `<div class="card plan pro"><div><b>Clip Heist Pro</b> ✓<br><span class="muted small">Everything unlocked.</span></div></div>`
+          : `<div class="card plan"><div><b>Free plan</b><br><span class="muted small">${Plan.exportsLeft()} of ${Plan.LIMITS.exportsPerWeek} exports left this week</span></div><button class="btn primary sm" data-act="upsell" data-r="quality">Go Pro</button></div>`}
         <div class="card stack">
           <h2>Channel</h2>
           <label class="field">Your handle (shown on every short)<input id="s-handle" placeholder="@yourchannel" value="${esc(settings.handle)}"></label>
+          <label class="field">Game or streamer you clip (used in titles)<input id="s-game" placeholder="e.g. your main game" value="${esc(settings.game || '')}"></label>
           <label class="field">Default hashtags<textarea id="s-tags" rows="2">${esc(settings.hashtags)}</textarea></label>
         </div>
         <div class="card stack">
@@ -425,8 +516,8 @@
         </div>
         <div class="card stack">
           <h2>Export</h2>
-          <div class="field">Quality<div class="chips" data-set="quality">${['1080', '720'].map((q) => `<button class="chip ${settings.quality === q ? 'on' : ''}" data-v="${q}">${q}p</button>`).join('')}</div></div>
-          <div class="field">Frame rate<div class="chips" data-set="fps">${[30, 60].map((q) => `<button class="chip ${settings.fps === q ? 'on' : ''}" data-v="${q}">${q} fps</button>`).join('')}</div></div>
+          <div class="field">Quality<div class="chips" data-set="quality">${['1080', '720'].map((q) => `<button class="chip ${(isPro() ? settings.quality : '720') === q ? 'on' : ''}" data-v="${q}" ${!isPro() && q === '1080' ? 'data-lock="quality"' : ''}>${!isPro() && q === '1080' ? LOCK + ' ' : ''}${q}p</button>`).join('')}</div></div>
+          <div class="field">Frame rate<div class="chips" data-set="fps">${[30, 60].map((q) => `<button class="chip ${(isPro() ? settings.fps : 30) === q ? 'on' : ''}" data-v="${q}" ${!isPro() && q === 60 ? 'data-lock="quality"' : ''}>${!isPro() && q === 60 ? LOCK + ' ' : ''}${q} fps</button>`).join('')}</div></div>
           <p class="hint">Format on this device: <b>${(Render.pickMime() || 'not supported').split(';')[0]}</b>. YouTube accepts both MP4 and WebM.</p>
         </div>
         <div class="card stack">
@@ -434,17 +525,25 @@
           <p id="usage" class="muted">Checking…</p>
           <button class="btn danger" data-act="wipe">Delete all gameplay and shorts</button>
         </div>
-        <p class="hint center">Clip Heist runs fully on your phone. Nothing is uploaded anywhere.<br>Not affiliated with Rockstar Games or YouTube.</p>
+        ${devMode() ? `<div class="card stack dev"><h2>🧪 Developer</h2>
+          <label class="check"><input type="checkbox" id="s-pro" ${isPro() ? 'checked' : ''}> Pro test mode</label>
+          <button class="btn sm" data-act="reset-exports">Reset weekly exports</button></div>` : ''}
+        <p class="hint center" id="about">Clip Heist runs on your device. Your videos are never uploaded.<br>Not affiliated with any game publisher, Twitch or YouTube.</p>
       </main>
       ${nav()}`;
     const on = (id, ev, fn) => $(id).addEventListener(ev, fn);
     on('#s-handle', 'change', (e) => { let v = e.target.value.trim(); if (v && !v.startsWith('@')) v = '@' + v; settings.handle = v; e.target.value = v; saveSettings(); toast('Saved'); });
+    on('#s-game', 'change', (e) => { settings.game = e.target.value.trim(); saveSettings(); toast('Saved'); });
+    if ($('#s-pro')) on('#s-pro', 'change', (e) => { Plan.setPro(e.target.checked); toast(e.target.checked ? 'Pro test mode on' : 'Back to Free'); render(); });
+    let taps = 0;
+    on('#about', 'click', () => { if (++taps >= 5) { localStorage.setItem('clip-heist-dev', devMode() ? '0' : '1'); taps = 0; toast(devMode() ? 'Developer mode on' : 'Developer mode off'); render(); } });
     on('#s-tags', 'change', (e) => { settings.hashtags = e.target.value.trim(); saveSettings(); toast('Saved'); });
     on('#s-pre', 'input', (e) => { settings.preRoll = +e.target.value; $('#pre-v').textContent = settings.preRoll + 's'; saveSettings(); });
     on('#s-post', 'input', (e) => { settings.postRoll = +e.target.value; $('#post-v').textContent = settings.postRoll + 's'; saveSettings(); });
     on('#s-autohook', 'change', (e) => { t.autoHook = e.target.checked; saveSettings(); });
     app.querySelectorAll('.chips[data-set]').forEach((g) => g.addEventListener('click', (e) => {
       const b = e.target.closest('.chip'); if (!b) return;
+      if (b.dataset.lock) return upsell(b.dataset.lock);
       const key = g.dataset.set;
       settings[key] = key === 'fps' ? +b.dataset.v : b.dataset.v;
       g.querySelectorAll('.chip').forEach((x) => x.classList.toggle('on', x === b));
@@ -545,7 +644,8 @@
   function drawPreview() {
     if (!ed) return;
     const { ctx, canvas, video, clip } = ed;
-    Render.draw(ctx, canvas.width, canvas.height, video, clip, video.currentTime, { guides: ed.guides });
+    Render.draw(ctx, canvas.width, canvas.height, video, clip, video.currentTime, { guides: ed.guides, watermark: !isPro() });
+    if (ed.tab === 'frame' && clip.frame.layout === 'stream' && !ed.playing) drawCamPicker();
     if (ed.tab === 'caps' && !ed.playing) { const b = document.querySelector('[data-act="cap-add"]'); if (b) b.textContent = '＋ Caption at ' + fmt(video.currentTime - clip.in, true); }
     const tt = $('#tp-time');
     if (tt) tt.textContent = `${fmt(video.currentTime - clip.in, true)} / ${fmt(clip.out - clip.in, true)}`;
@@ -607,7 +707,8 @@
       const n = source.curve.length;
       for (let x = 0; x < w; x += 3) {
         const t = a + (x / w) * (b - a);
-        const v = source.curve[clamp(Math.floor((t / source.duration) * n), 0, n - 1)] || 0;
+        const v = curveAt(source, t);
+        if (v == null) continue;
         ctx.fillStyle = heatColor(v);
         const bh = clamp(((v + 1) / 5) * (h - 16), 2, h - 16);
         ctx.globalAlpha = 0.85;
@@ -665,10 +766,11 @@
       if (!drag.moved) return;
       const f = ed.clip.frame, W = canvas.width, H = canvas.height;
       const vw = video.videoWidth || 16, vh = video.videoHeight || 9;
-      const s = (f.layout === 'fill' ? Math.max(W / vw, H / vh) : W / vw) * f.zoom;
+      const areaH = f.layout === 'stream' ? H * (1 - (f.split ?? 0.38)) : H;
+      const s = (f.layout === 'fill' || f.layout === 'stream' ? Math.max(W / vw, areaH / vh) : W / vw) * f.zoom;
       const dw = vw * s, dh = vh * s;
       if (dw > W + 1) f.panX = clamp(drag.panX - dx / (dw - W), 0, 1);
-      if (f.layout === 'fill') { if (dh > H + 1) f.panY = clamp(drag.panY - dy / (dh - H), 0, 1); }
+      if (f.layout === 'fill' || f.layout === 'stream') { if (dh > areaH + 1) f.panY = clamp(drag.panY - dy / (dh - areaH), 0, 1); }
       else f.panY = clamp(drag.panY + dy / (H * 0.5), 0, 1);
       touchClip();
       syncFrameInputs();
@@ -715,10 +817,70 @@
     });
   }
 
-  function chips(key, options, current) {
-    return `<div class="chips" data-key="${key}">${options.map(([v, l]) => `<button class="chip ${String(current) === String(v) ? 'on' : ''}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  // locked: { value: upsellReason } for options that need Pro.
+  function chips(key, options, current, locked = {}) {
+    return `<div class="chips" data-key="${key}">${options.map(([v, l]) => {
+      const lock = !isPro() && locked[v];
+      return `<button class="chip ${String(current) === String(v) ? 'on' : ''}" data-v="${v}" ${lock ? `data-lock="${lock}"` : ''}>${lock ? LOCK + ' ' : ''}${l}</button>`;
+    }).join('')}</div>`;
   }
+  const lockedRow = (reason, label, hint = '') => `<button class="check locked-row" data-act="upsell" data-r="${reason}"><span class="lk">${LOCK}</span><span>${label}${hint ? `<small>${hint}</small>` : ''}</span><span class="pro-tag">PRO</span></button>`;
+  const styleLocks = () => Object.fromEntries(Object.keys(Render.STYLES).filter((k) => !Plan.LIMITS.freeStyles.includes(k)).map((k) => [k, 'styles']));
   const toggleRow = (key, label, on, hint = '') => `<label class="check"><input type="checkbox" data-key="${key}" ${on ? 'checked' : ''}><span>${label}${hint ? `<small>${hint}</small>` : ''}</span></label>`;
+
+  // Keep the facecam box the chosen shape and inside the video.
+  function fixCam() {
+    const f = ed.clip.frame, v = ed.video, cam = f.cam;
+    const vw = v.videoWidth || 16, vh = v.videoHeight || 9;
+    const shape = +(f.camShape || 1.778);
+    cam.w = clamp(cam.w, 0.05, 1);
+    cam.h = clamp((cam.w * vw) / shape / vh, 0.05, 1);
+    if (cam.h >= 1) cam.w = (vh * shape) / vw;
+    cam.x = clamp(cam.x, 0, 1 - cam.w);
+    cam.y = clamp(cam.y, 0, 1 - cam.h);
+  }
+
+  function drawCamPicker() {
+    const c = document.getElementById('campick');
+    if (!c || !ed || ed.clip.frame.layout !== 'stream') return;
+    const v = ed.video, cam = ed.clip.frame.cam;
+    const w = c.clientWidth, h = Math.round(w * ((v.videoHeight || 9) / (v.videoWidth || 16)));
+    const dpr = window.devicePixelRatio || 1;
+    c.style.height = h + 'px';
+    c.width = w * dpr; c.height = h * dpr;
+    const ctx = c.getContext('2d');
+    ctx.scale(dpr, dpr);
+    if (v.readyState >= 2) ctx.drawImage(v, 0, 0, w, h);
+    ctx.fillStyle = 'rgba(0,0,0,.55)';
+    const x = cam.x * w, y = cam.y * h, bw = cam.w * w, bh = cam.h * h;
+    ctx.fillRect(0, 0, w, y); ctx.fillRect(0, y + bh, w, h - y - bh); ctx.fillRect(0, y, x, bh); ctx.fillRect(x + bw, y, w - x - bw, bh);
+    ctx.strokeStyle = '#ff3ea5'; ctx.lineWidth = 3; ctx.strokeRect(x, y, bw, bh);
+    ctx.fillStyle = '#ff3ea5'; ctx.font = '700 12px system-ui'; ctx.fillText('FACECAM', x + 6, y + 16);
+  }
+
+  function setupCamPicker() {
+    const c = document.getElementById('campick');
+    if (!c) return;
+    let drag = null;
+    c.addEventListener('pointerdown', (e) => {
+      c.setPointerCapture(e.pointerId);
+      const r = c.getBoundingClientRect(), cam = ed.clip.frame.cam;
+      const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+      // Tap outside the box moves it there; drag inside moves it along.
+      if (px < cam.x || px > cam.x + cam.w || py < cam.y || py > cam.y + cam.h) { cam.x = px - cam.w / 2; cam.y = py - cam.h / 2; fixCam(); }
+      drag = { px, py, x: cam.x, y: cam.y };
+      drawCamPicker(); touchClip();
+    });
+    c.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      const r = c.getBoundingClientRect(), cam = ed.clip.frame.cam;
+      cam.x = drag.x + (e.clientX - r.left) / r.width - drag.px;
+      cam.y = drag.y + (e.clientY - r.top) / r.height - drag.py;
+      fixCam(); drawCamPicker(); touchClip();
+    });
+    c.addEventListener('pointerup', () => { drag = null; });
+    requestAnimationFrame(drawCamPicker);
+  }
 
   function renderPanel() {
     const c = ed.clip;
@@ -743,21 +905,36 @@
         <p class="hint">Drag the pink handles on the timeline. Tip: start 1–2 seconds before things kick off and end right after the payoff. Short + loopable = more views.</p>`;
     } else if (ed.tab === 'frame') {
       p.innerHTML = `
-        <div class="field">Layout${chips('frame.layout', [['fill', 'Full screen'], ['blur', 'Fit + blur'], ['fit', 'Fit + black']], c.frame.layout)}</div>
+        <div class="field">Layout${chips('frame.layout', [['fill', 'Full screen'], ['blur', 'Fit + blur'], ['fit', 'Fit + black'], ['stream', '🎥 Streamer']], c.frame.layout, { stream: 'stream' })}</div>
+        ${c.frame.layout === 'stream' ? `
+          <div class="field">Facecam: drag the pink box over the streamer’s camera
+            <canvas id="campick" class="campick"></canvas>
+            <div class="chips">${[['tl', '↖ Top left'], ['tr', 'Top right ↗'], ['bl', '↙ Bottom left'], ['br', 'Bottom right ↘']].map(([k, l]) => `<button class="chip" data-act="cam-corner" data-c="${k}">${l}</button>`).join('')}</div>
+          </div>
+          <label class="field">Facecam size<input type="range" data-key="frame.cam.w" min="0.1" max="0.6" step="0.005" value="${c.frame.cam.w}"></label>
+          <div class="field">Facecam shape${chips('frame.camShape', [['1.778', '16:9'], ['1.333', '4:3'], ['1', 'Square']], c.frame.camShape || '1.778')}</div>
+          <label class="field">Facecam height on screen<input type="range" data-key="frame.split" min="0.25" max="0.55" step="0.005" value="${c.frame.split}"></label>` : ''}
         <label class="field">Zoom <b id="zoom-v">${c.frame.zoom.toFixed(2)}×</b><input type="range" data-key="frame.zoom" min="1" max="2.5" step="0.01" value="${c.frame.zoom}"></label>
         <label class="field">Left ↔ right<input type="range" data-key="frame.panX" min="0" max="1" step="0.005" value="${c.frame.panX}"></label>
         <label class="field">Up ↕ down<input type="range" data-key="frame.panY" min="0" max="1" step="0.005" value="${c.frame.panY}"></label>
         <p class="hint">Or just drag the video in the preview to follow the action.</p>`;
+      if (c.frame.layout === 'stream') setupCamPicker();
     } else if (ed.tab === 'text') {
       const styles = Object.entries(Render.STYLES).map(([k, v]) => [k, v.label]);
       p.innerHTML = `
         <label class="field">Hook (top text)<div class="row gap"><input data-key="text.hook" value="${esc(c.text.hook)}" placeholder="WAIT FOR IT…"><button class="btn sm" data-act="reroll-hook" title="New idea">🎲</button></div></label>
-        <div class="field">Style${chips('text.style', styles, c.text.style)}</div>
+        <div class="field">Style${chips('text.style', styles, c.text.style, styleLocks())}</div>
         <label class="field">Size<input type="range" data-key="text.size" min="50" max="140" value="${c.text.size}"></label>
         <label class="field">Position<input type="range" data-key="text.y" min="0.06" max="0.8" step="0.01" value="${c.text.y}"></label>
-        <label class="field">Reaction (appears at the 💥 hit)<div class="row gap"><input data-key="text.payoff" value="${esc(c.text.payoff)}" placeholder="💀💀💀"><button class="btn sm" data-act="reroll-payoff" title="New idea">🎲</button></div></label>
-        <div class="field">Reaction style${chips('text.payoffStyle', styles, c.text.payoffStyle)}</div>
+        ${isPro() ? `<label class="field">Reaction (appears at the 💥 hit)<div class="row gap"><input data-key="text.payoff" value="${esc(c.text.payoff)}" placeholder="💀💀💀"><button class="btn sm" data-act="reroll-payoff" title="New idea">🎲</button></div></label>
+        <div class="field">Reaction style${chips('text.payoffStyle', styles, c.text.payoffStyle)}</div>` : lockedRow('payoff', 'Reaction text at the 💥 hit', 'e.g. “NAH 😭” the moment it happens')}
         <label class="field">Handle<input data-key="text.handle" value="${esc(c.text.handle)}" placeholder="@yourchannel"></label>`;
+    } else if (ed.tab === 'caps' && !isPro()) {
+      p.innerHTML = `<div class="locked-panel">
+        <div class="pro-badge">PRO</div>
+        <h3>Captions that keep people watching</h3>
+        <p class="muted">Add timed captions that pop in as the clip plays, split long lines into fast 2–3 word captions, and pick from 6 styles.</p>
+        <button class="btn primary" data-act="upsell" data-r="captions">Unlock captions</button></div>`;
     } else if (ed.tab === 'caps') {
       const styles = Object.entries(Render.STYLES).map(([k, v]) => [k, v.label]);
       const rel = (t) => fmt(t - c.in, true);
@@ -787,14 +964,14 @@
       if (ed.focusCap) { const el = p.querySelector(`[data-cap="${ed.focusCap}"]`); ed.focusCap = null; if (el) { el.focus(); el.scrollIntoView({ block: 'center' }); } }
     } else if (ed.tab === 'fx') {
       p.innerHTML = `
-        <div class="field">Speed${chips('speed', [[0.5, '0.5×'], [0.75, '0.75×'], [1, '1×'], [1.25, '1.25×'], [1.5, '1.5×'], [2, '2×']], c.speed)}</div>
+        <div class="field">Speed${chips('speed', [[0.5, '0.5×'], [0.75, '0.75×'], [1, '1×'], [1.25, '1.25×'], [1.5, '1.5×'], [2, '2×']], c.speed, { 0.5: 'fx', 0.75: 'fx', 1.25: 'fx', 1.5: 'fx', 2: 'fx' })}</div>
         <p class="hint">${c.peak == null ? '⚠️ Set the 💥 hit (play to the big moment, tap “Hit here”) to use the effects below.' : `💥 Hit at ${fmt(c.peak, true)}. Effects fire there.`}</p>
         ${toggleRow('fx.punch', 'Punch-in zoom', c.fx.punch, 'Quick zoom on the hit')}
-        ${toggleRow('fx.slowmo', 'Slow-mo on the hit', c.fx.slowmo, 'Drops to 40% speed for 2 seconds')}
+        ${isPro() ? `${toggleRow('fx.slowmo', 'Slow-mo on the hit', c.fx.slowmo, 'Drops to 40% speed for 2 seconds')}
         ${toggleRow('fx.shake', 'Camera shake', c.fx.shake)}
-        ${toggleRow('fx.flash', 'White flash', c.fx.flash)}
+        ${toggleRow('fx.flash', 'White flash', c.fx.flash)}` : `${lockedRow('fx', 'Slow-mo on the hit', 'Drops to 40% speed for 2 seconds')}${lockedRow('fx', 'Camera shake')}${lockedRow('fx', 'White flash')}`}
         ${toggleRow('fx.progress', 'Progress bar', c.fx.progress, 'Keeps people watching to the end')}
-        <button class="btn block ghost" data-act="save-template">Use this look for all new shorts</button>`;
+        <button class="btn block ghost" data-act="save-template">${isPro() ? '' : LOCK + ' '}Use this look for all new shorts</button>`;
     } else if (ed.tab === 'post') {
       p.innerHTML = `
         <label class="field">Title <span class="muted small" id="title-n">${c.post.title.length}/100</span>
@@ -834,6 +1011,7 @@
     let v = el.type === 'checkbox' ? el.checked : el.type === 'range' ? +el.value : el.value;
     setKey(ed.clip, key, v);
     if (key === 'frame.zoom') $('#zoom-v').textContent = v.toFixed(2) + '×';
+    if (key === 'frame.cam.w') { const cam = ed.clip.frame.cam, cx = cam.x + cam.w / 2, cy = cam.y + cam.h / 2; fixCam(); cam.x = cx - cam.w / 2; cam.y = cy - cam.h / 2; fixCam(); drawCamPicker(); }
     if (key === 'post.title') $('#title-n').textContent = v.length + '/100';
     touchClip();
   });
@@ -854,6 +1032,17 @@
   async function exportClips(list) {
     if (exporting) return;
     if (!list.length) return;
+    if (!isPro()) {
+      if (list.length > 1) return upsell('batch');
+      const used = proFeaturesUsed(list[0]);
+      if (used.length) return upsell('features', ` It uses: ${used.join(', ')}. Turn ${used.length > 1 ? 'them' : 'it'} off, or go Pro.`);
+      if (Render.outputDuration(list[0]) > Plan.LIMITS.maxShortSeconds + 0.5) return upsell('long');
+      if (Plan.exportsLeft() <= 0) {
+        const at = Plan.nextExportAt();
+        return upsell('exports', at ? ` Your next free export unlocks ${new Date(at).toLocaleDateString(undefined, { weekday: 'long' })}.` : '');
+      }
+    }
+    const exportSettings = isPro() ? { ...settings } : { ...settings, quality: '720', fps: 30, watermark: true, endCard: true };
     exporting = true;
     Render.getAudioCtx(); // must happen inside the tap
     const ctrl = new AbortController();
@@ -872,13 +1061,14 @@
         const clip = list[i];
         $('#ex-h', m.el).textContent = list.length > 1 ? `Exporting ${i + 1} of ${list.length}…` : 'Exporting…';
         const blob = await DB.get('blobs', 'src:' + clip.sourceId);
-        const out = await Render.exportClip(clip, blob, settings, (p) => {
+        const out = await Render.exportClip(clip, blob, exportSettings, (p) => {
           const total = (i + p) / list.length;
           $('#ex-bar', m.el).style.width = Math.round(total * 100) + '%';
           $('#ex-pct', m.el).textContent = Math.round(total * 100) + '%';
         }, ctrl.signal);
         await DB.put('blobs', out, 'out:' + clip.id);
         clip.exported = { type: out.type, size: out.size, at: Date.now(), stale: false };
+        if (!isPro()) Plan.recordExport();
         await saveClip(clip);
         results.push(clip);
       }
@@ -914,12 +1104,14 @@
       ${canShare ? '<button class="btn primary block" data-r="share">Share → YouTube</button>' : ''}
       <a class="btn ${canShare ? '' : 'primary'} block" href="${url}" download="${esc(file.name)}">Save video</a>
       <button class="btn block" data-r="copy">Copy title + description</button>
+      ${isPro() ? '' : `<button class="btn block pro-cta" data-r="pro">✨ Remove watermark &amp; export in 1080p</button><p class="muted small center">${Plan.exportsLeft()} free export${Plan.exportsLeft() === 1 ? '' : 's'} left this week</p>`}
       <button class="btn ghost block" data-r="close">Close</button>`, {
       onMount(el, close) {
         el.addEventListener('click', async (e) => {
           const r = e.target.closest('[data-r]');
           if (!r) return;
           if (r.dataset.r === 'close') { close(); URL.revokeObjectURL(url); }
+          if (r.dataset.r === 'pro') { close(); URL.revokeObjectURL(url); return upsell('watermark'); }
           if (r.dataset.r === 'copy') copy(`${clip.post.title}\n\n${clip.post.description}`);
           if (r.dataset.r === 'share') {
             try {
@@ -944,6 +1136,8 @@
 
     switch (act) {
       case 'go': return go(el.dataset.to);
+      case 'upsell': return upsell(el.dataset.r);
+      case 'reset-exports': Plan.resetExports(); toast('Exports reset'); return render();
       case 'open-source': return go('source', { id: el.dataset.id });
       case 'edit': return go('editor', { id: el.dataset.id });
       case 'editor-back': { const c = ed && ed.clip; return go(c ? 'source' : 'clips', c ? { id: c.sourceId } : {}); }
@@ -974,6 +1168,7 @@
         return go('editor', { id: c.id });
       }
       case 'clip-here': {
+        if (!isPro() && (player.currentTime || 0) > Plan.LIMITS.maxSourceSeconds) return upsell('length');
         if (!s.duration && player.duration) s.duration = player.duration;
         const t = player.currentTime || 0;
         const c = newClip(s, Math.max(0, t - settings.preRoll), Math.min(s.duration || t + settings.postRoll, t + settings.postRoll), t, null);
@@ -982,6 +1177,7 @@
         return go('editor', { id: c.id });
       }
       case 'auto-all': {
+        if (!isPro()) return upsell('batch');
         let n = 0;
         for (const h of s.highlights) {
           if (clips.some((c) => c.highlightId === h.id)) continue;
@@ -991,7 +1187,7 @@
         toast(n ? `Made ${n} shorts — review and export them` : 'All highlights already have shorts');
         return go('clips');
       }
-      case 'export-all': return exportClips(clips.filter((c) => !c.exported));
+      case 'export-all': if (!isPro()) return upsell('batch'); return exportClips(clips.filter((c) => !c.exported));
 
       case 'del-clip': {
         if (!(await confirmBox('Delete this short?', 'Your gameplay stays; only this edit is removed.'))) return;
@@ -1081,7 +1277,14 @@
       }
       case 'copy-title': return copy(c.post.title);
       case 'copy-desc': return copy(c.post.description);
+      case 'cam-corner': {
+        const cam = c.frame.cam, m = 0.01, k2 = el.dataset.c;
+        cam.x = k2.includes('l') ? m : 1 - cam.w - m;
+        cam.y = k2.includes('t') ? m : 1 - cam.h - m;
+        fixCam(); drawCamPicker(); break;
+      }
       case 'save-template':
+        if (!isPro()) return upsell('template');
         settings.template = { ...settings.template, frame: structuredClone(c.frame), fx: structuredClone(c.fx), speed: c.speed,
           text: { style: c.text.style, size: c.text.size, y: c.text.y, payoffStyle: c.text.payoffStyle, payoffY: c.text.payoffY,
             capStyle: c.text.capStyle, capSize: c.text.capSize, capY: c.text.capY, capPop: c.text.capPop, capUpper: c.text.capUpper } };
@@ -1098,12 +1301,19 @@
     if (!ed) return;
     const chip = e.target.closest('#panel .chips[data-key] .chip');
     if (!chip) return;
+    if (chip.dataset.lock) return upsell(chip.dataset.lock);
     const group = chip.parentElement;
     const key = group.dataset.key;
     const raw = chip.dataset.v;
     setKey(ed.clip, key, key === 'speed' ? +raw : raw);
     group.querySelectorAll('.chip').forEach((x) => x.classList.toggle('on', x === chip));
-    if (key === 'frame.layout') { ed.clip.frame.panY = 0.5; syncFrameInputs(); }
+    if (key === 'frame.layout') {
+      const f = ed.clip.frame;
+      f.panY = 0.5;
+      if (raw === 'stream') { f.cam = f.cam || { x: 0.01, y: 0.01, w: 0.26, h: 0.26 }; f.split = f.split ?? 0.38; f.camShape = f.camShape || '1.778'; fixCam(); }
+      renderPanel();
+    }
+    if (key === 'frame.camShape') { fixCam(); drawCamPicker(); }
     touchClip();
   });
 

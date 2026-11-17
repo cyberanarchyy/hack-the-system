@@ -112,7 +112,28 @@ const Render = (() => {
     const layout = clip.frame.layout || 'fill';
 
     if (video.readyState >= 2) {
-      if (layout === 'fill') {
+      if (layout === 'stream') {
+        // Facecam (cropped from the source) stacked on top of the gameplay.
+        const cam = clip.frame.cam || { x: 0.02, y: 0.02, w: 0.28, h: 0.28 };
+        const split = clip.frame.split ?? 0.38;
+        const camH = Math.round(H * split);
+        const sx = cam.x * vw, sy = cam.y * vh, sw = cam.w * vw, sh = cam.h * vh;
+        // Cover-fit the cam crop into W x camH.
+        const want = W / camH, have = sw / sh;
+        let cx = sx, cy = sy, cw = sw, ch = sh;
+        if (have > want) { cw = sh * want; cx = sx + (sw - cw) / 2; } else { ch = sw / want; cy = sy + (sh - ch) / 2; }
+        ctx.drawImage(video, cx, cy, cw, ch, 0, 0, W, camH);
+        // Gameplay fills the rest.
+        const gh = H - camH;
+        const s = Math.max(W / vw, gh / vh) * zoom;
+        const dw = vw * s, dh = vh * s;
+        ctx.save();
+        ctx.beginPath(); ctx.rect(0, camH, W, gh); ctx.clip();
+        ctx.drawImage(video, (W - dw) * panX + shakeX, camH + (gh - dh) * panY + shakeY, dw, dh);
+        ctx.restore();
+        ctx.fillStyle = '#ff3ea5';
+        ctx.fillRect(0, camH - 4 * k, W, 8 * k);
+      } else if (layout === 'fill') {
         const s = Math.max(W / vw, H / vh) * zoom;
         const dw = vw * s, dh = vh * s;
         ctx.drawImage(video, (W - dw) * panX + shakeX, (H - dh) * panY + shakeY, dw, dh);
@@ -183,6 +204,8 @@ const Render = (() => {
       ctx.fillRect(0, H - 12 * k, W * p, 12 * k);
     }
 
+    if (opts.watermark) drawWatermark(ctx, k, W, H);
+
     if (opts.guides) {
       // Where YouTube's own buttons and caption sit on Shorts.
       ctx.save();
@@ -191,6 +214,47 @@ const Render = (() => {
       ctx.fillRect(0, H * 0.84, W * 0.86, H * 0.16);
       ctx.restore();
     }
+  }
+
+  const logo = new Image();
+  logo.src = 'icon.svg';
+
+  function drawWatermark(ctx, k, W, H) {
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    const s = 64 * k, x = W - 300 * k, y = H * 0.045;
+    ctx.fillStyle = 'rgba(0,0,0,.45)';
+    roundRect(ctx, x - 12 * k, y - 10 * k, 290 * k, s + 20 * k, 20 * k);
+    ctx.fill();
+    if (logo.complete && logo.naturalWidth) ctx.drawImage(logo, x, y, s, s);
+    ctx.font = `900 ${Math.round(34 * k)}px "Arial Black", Impact, system-ui, sans-serif`;
+    ctx.fillStyle = '#fff';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Clip Heist', x + s + 12 * k, y + s / 2 + 2 * k);
+    ctx.restore();
+  }
+
+  // Branded closing frame for free-plan exports.
+  function drawEndCard(ctx, W, H, p) {
+    const k = W / BASE_W;
+    ctx.fillStyle = '#0b0b10';
+    ctx.fillRect(0, 0, W, H);
+    const g = ctx.createRadialGradient(W / 2, H * 0.42, 0, W / 2, H * 0.42, W * 0.8);
+    g.addColorStop(0, 'rgba(255,62,165,.35)'); g.addColorStop(1, 'rgba(255,62,165,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const e = Math.min(1, p * 3), sc = 0.7 + 0.3 * (1 - Math.pow(1 - e, 3));
+    const s = 360 * k * sc;
+    if (logo.complete && logo.naturalWidth) ctx.drawImage(logo, W / 2 - s / 2, H * 0.3 - s / 2, s, s);
+    ctx.save();
+    ctx.globalAlpha = e;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `900 ${Math.round(120 * k)}px "Arial Black", Impact, system-ui, sans-serif`;
+    ctx.fillStyle = '#fff';
+    ctx.fillText('Clip Heist', W / 2, H * 0.47);
+    ctx.font = `700 ${Math.round(44 * k)}px system-ui, sans-serif`;
+    ctx.fillStyle = '#c9c9da';
+    ctx.fillText('Made with Clip Heist', W / 2, H * 0.54);
+    ctx.restore();
   }
 
   // Length of the finished short in seconds, accounting for speed and slow-mo.
@@ -276,12 +340,12 @@ const Render = (() => {
       const stopped = new Promise((res) => { rec.onstop = res; });
 
       await Analyzer.seek(video, clip.in);
-      draw(ctx, W, H, video, clip, clip.in);
+      draw(ctx, W, H, video, clip, clip.in, { watermark: settings.watermark });
       video.playbackRate = speedAt(clip, clip.in);
       rec.start(500);
       await video.play();
 
-      const total = outputDuration(clip);
+      const total = outputDuration(clip) + (settings.endCard ? 1.2 : 0);
       const started = performance.now();
       await new Promise((resolve, reject) => {
         let finished = false;
@@ -291,7 +355,7 @@ const Render = (() => {
           const t = video.currentTime;
           const r = speedAt(clip, t);
           if (Math.abs(video.playbackRate - r) > 0.001) video.playbackRate = r;
-          draw(ctx, W, H, video, clip, t);
+          draw(ctx, W, H, video, clip, t, { watermark: settings.watermark });
           onProgress(Math.min(0.99, (performance.now() - started) / 1000 / total));
           if (t >= clip.out || video.ended) { finished = true; resolve(); return; }
           schedule();
@@ -302,7 +366,19 @@ const Render = (() => {
         schedule();
       });
       video.pause();
-      draw(ctx, W, H, video, clip, clip.out);
+      if (settings.endCard) {
+        const t0 = performance.now();
+        await new Promise((resolve) => {
+          const frame = () => {
+            const p = (performance.now() - t0) / 1200;
+            drawEndCard(ctx, W, H, Math.min(1, p));
+            if (p >= 1) resolve(); else requestAnimationFrame(frame);
+          };
+          frame();
+        });
+      } else {
+        draw(ctx, W, H, video, clip, clip.out, { watermark: settings.watermark });
+      }
       await new Promise((r) => setTimeout(r, 120));
       rec.stop();
       await stopped;

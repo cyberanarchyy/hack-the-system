@@ -3,24 +3,276 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Clip Heist: Turn hours of gameplay into viral Shorts</title>
+  <meta name="description" content="Clip Heist finds the best moments in your gameplay and stream VODs and turns them into vertical Shorts, TikToks and Reels with captions and effects, in minutes, right in your browser.">
   <meta name="theme-color" content="#0b0b10">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Clip Heist">
-  <meta name="description" content="Turn your GTA 6 gameplay into YouTube Shorts: automatic highlight finder, vertical reframing, captions, effects and export, all on your phone.">
-  <title>Clip Heist</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="assets/img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="app/icon-192.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Clip Heist: Turn hours of gameplay into viral Shorts">
+  <meta property="og:description" content="Finds your best moments automatically. Vertical, captioned and ready for Shorts, TikTok and Reels in minutes.">
+  <meta property="og:image" content="assets/img/og.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="assets/fonts/display-900.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/site.css">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Clip Heist","applicationCategory":"MultimediaApplication","operatingSystem":"Web, Windows, macOS, iOS, Android",
+   "description":"Automatic gameplay and stream clipping for YouTube Shorts, TikTok and Reels.",
+   "offers":[{"@type":"Offer","price":"0","priceCurrency":"USD","name":"Free"},{"@type":"Offer","price":"6.99","priceCurrency":"USD","name":"Pro (monthly)"}]}
+  </script>
 </head>
 <body>
-  <div id="app"></div>
-  <div id="toast" role="status" aria-live="polite"></div>
-  <script src="db.js"></script>
-  <script src="analyze.js"></script>
-  <script src="render.js"></script>
-  <script src="app.js"></script>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav" id="nav">
+    <div class="container nav-in">
+      <a class="brand" href="#top" aria-label="Clip Heist home"><img src="assets/img/logo.svg" alt="" width="34" height="34"><span><b>Clip</b> Heist</span></a>
+      <nav class="links" id="links" aria-label="Main">
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#clippers">For clippers</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="nav-cta">
+        <a class="btn btn-ghost hide-sm" href="#waitlist">Join waitlist</a>
+        <a class="btn btn-primary" href="app/">Open the app</a>
+        <button class="menu-btn" id="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="links"><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <div class="glow g1"></div><div class="glow g2"></div><div class="gridbg"></div>
+      <div class="container hero-in">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="dot"></span> Built for the biggest gaming launch of the decade</p>
+          <h1>Turn hours of gameplay into <span class="grad">Shorts that blow up.</span></h1>
+          <p class="lead">Clip Heist watches your recordings and stream VODs, finds the moments worth posting, and turns them into vertical clips with captions and effects. It takes minutes, right in your browser.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary btn-lg" href="app/">Start clipping free <span aria-hidden="true">→</span></a>
+            <button class="btn btn-glass btn-lg" id="demo-btn"><span class="play" aria-hidden="true">▶</span> Watch the 16s demo</button>
+          </div>
+          <ul class="trust">
+            <li>✓ No upload, your footage stays on your device</li>
+            <li>✓ Works with any game</li>
+            <li>✓ Free plan, no card</li>
+          </ul>
+        </div>
+        <div class="hero-visual">
+          <div class="phone">
+            <video src="assets/video/promo-540.mp4" poster="assets/img/promo-poster.webp" autoplay muted loop playsinline preload="metadata" aria-label="Clip Heist demo"></video>
+          </div>
+          <div class="float f1"><span>✂️</span><div><b>13 highlights found</b><small>in a 2-hour session</small></div></div>
+          <div class="float f2"><span>💥</span><div><b>Hit at 0:24</b><small>slow-mo + punch zoom</small></div></div>
+          <div class="float f3"><span>⚡</span><div><b>1080p · 60 fps</b><small>ready to post</small></div></div>
+        </div>
+      </div>
+      <div class="container sources">
+        <span>Bring footage from</span>
+        <ul><li>OBS</li><li>ShadowPlay</li><li>PS5</li><li>Xbox</li><li>Twitch VODs</li><li>Kick VODs</li><li>Phone recordings</li></ul>
+      </div>
+    </section>
+
+    <!-- MOMENT -->
+    <section class="moment">
+      <div class="container narrow reveal">
+        <h2>Millions of hours of new footage are about to hit the internet.</h2>
+        <p>When a massive open world drops, the first wave of clips decides who grows. The chases, the crashes, the moments nobody saw coming. Clip Heist digs them out of your footage so you can post them <em>first</em>, not after a night of scrubbing timelines.</p>
+      </div>
+    </section>
+
+    <!-- HOW -->
+    <section class="section" id="how">
+      <div class="container">
+        <header class="sec-head reveal">
+          <p class="kicker">How it works</p>
+          <h2>From a 3-hour session to a week of posts.</h2>
+        </header>
+        <ol class="steps">
+          <li class="step reveal">
+            <div class="step-num">1</div>
+            <h3>Drop in your footage</h3>
+            <p>Gameplay recordings, console captures or full stream VODs. Nothing gets uploaded. Clip Heist works on your device, so even huge files open fast.</p>
+            <div class="shot"><img src="assets/img/3-highlights.webp" alt="Clip Heist highlight list" loading="lazy" width="585" height="1266"></div>
+          </li>
+          <li class="step reveal">
+            <div class="step-num">2</div>
+            <h3>It finds the moments</h3>
+            <p>The highlight finder listens for gunfire, crashes and screaming chats, and watches for chaos on screen. Then it ranks your best moments with the big hit already marked.</p>
+            <div class="shot"><img src="assets/img/4-editor-captions.webp" alt="Editing a short with captions" loading="lazy" width="585" height="1266"></div>
+          </li>
+          <li class="step reveal">
+            <div class="step-num">3</div>
+            <h3>Polish &amp; post</h3>
+            <p>Vertical framing, hook text, captions, slow-mo on the hit, and a title and hashtags written for you. Export and share straight to Shorts, TikTok or Reels.</p>
+            <div class="shot"><img src="assets/img/4b-editor-hit.webp" alt="Reaction text and punch zoom on the big moment" loading="lazy" width="585" height="1266"></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section alt" id="features">
+      <div class="container">
+        <header class="sec-head reveal">
+          <p class="kicker">Features</p>
+          <h2>Everything a clip channel needs. Nothing it doesn’t.</h2>
+        </header>
+        <div class="features">
+          <article class="feature reveal"><div class="ficon">🎯</div><h3>Automatic highlights</h3><p>Sound spikes, explosions, sudden action and flashes are scored and ranked, with a heat map of your whole session.</p></article>
+          <article class="feature reveal"><div class="ficon">🎥</div><h3>Streamer layout</h3><p>Facecam on top, gameplay below. Drag a box over the cam once and every clip is framed like the big clip channels do it.</p></article>
+          <article class="feature reveal"><div class="ficon">💬</div><h3>Captions that pop</h3><p>Timed captions that pop in as the clip plays. Split a long line into fast 2–3 word bursts with one tap. Six styles.</p></article>
+          <article class="feature reveal"><div class="ficon">💥</div><h3>Effects on the hit</h3><p>Mark the moment and Clip Heist fires punch-in zoom, slow-mo, shake and a flash right on it. Add a reaction line like “NAH 😭”.</p></article>
+          <article class="feature reveal"><div class="ficon">🚀</div><h3>Upload kit</h3><p>Titles, descriptions and hashtags written for every clip, plus safe-zone guides so YouTube’s buttons never cover your text.</p></article>
+          <article class="feature reveal"><div class="ficon">🔒</div><h3>Private by design</h3><p>Your footage never leaves your device. No upload queues, no storage limits, no waiting for a server.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIPPERS -->
+    <section class="section" id="clippers">
+      <div class="container split">
+        <div class="split-copy reveal">
+          <p class="kicker">For stream clippers</p>
+          <h2>One VOD. A week of content.</h2>
+          <p class="lead">Clipping is one of the fastest-growing jobs in gaming. Streamers and brands pay clippers by the view, and the fastest clippers win. Clip Heist turns a 4-hour stream into a stack of ready-to-post Shorts before the stream is even cold.</p>
+          <ul class="checks">
+            <li><b>Scans full-length VODs</b>, so you can skip the scrubbing</li>
+            <li><b>Catches chat-worthy reactions</b> from the streamer’s audio</li>
+            <li><b>Facecam + gameplay layout</b> in one tap, then reused for every clip</li>
+            <li><b>Bulk make &amp; export</b> every highlight at once</li>
+          </ul>
+          <p class="fine">Only clip streams you have permission to use. Many streamers run open clipping programs.</p>
+        </div>
+        <div class="split-visual reveal">
+          <figure class="before"><img src="assets/img/stream-source.webp" alt="A 16:9 stream with a facecam in the corner" loading="lazy" width="1206" height="681"><figcaption>Your 16:9 stream</figcaption></figure>
+          <div class="arrow" aria-hidden="true">→</div>
+          <figure class="after"><img src="assets/img/stream-short.webp" alt="The same moment as a vertical short with the facecam on top" loading="lazy" width="726" height="1287"><figcaption>Ready-to-post Short</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="section alt" id="pricing">
+      <div class="container">
+        <header class="sec-head reveal">
+          <p class="kicker">Pricing</p>
+          <h2>Start free. Go Pro when your clips start hitting.</h2>
+          <div class="billing" role="group" aria-label="Billing period">
+            <button class="on" data-bill="month">Monthly</button>
+            <button data-bill="year">Yearly <span class="save">Save 41%</span></button>
+          </div>
+        </header>
+        <div class="plans">
+          <article class="plan reveal">
+            <h3>Free</h3>
+            <p class="amount"><b>$0</b></p>
+            <p class="plan-sub">Try the magic on your own footage.</p>
+            <a class="btn btn-glass btn-block" href="app/">Start free</a>
+            <ul>
+              <li>Highlight finder (top 3 per video)</li>
+              <li>Videos up to 10 minutes</li>
+              <li>3 exports a week, 720p</li>
+              <li>Shorts up to 30 seconds</li>
+              <li>Hook text &amp; punch-in zoom</li>
+              <li class="muted">Clip Heist watermark</li>
+            </ul>
+          </article>
+          <article class="plan pro reveal">
+            <div class="ribbon">Most popular</div>
+            <h3>Pro</h3>
+            <p class="amount"><b data-month="$6.99" data-year="$4.08">$6.99</b><span data-month="/month" data-year="/month, billed $49 yearly">/month</span></p>
+            <p class="plan-sub">For creators and clippers posting every day.</p>
+            <a class="btn btn-primary btn-block" href="#waitlist">Join the waitlist</a>
+            <ul>
+              <li><b>Every highlight</b>, full-length VODs</li>
+              <li><b>Unlimited exports</b> in 1080p / 60 fps</li>
+              <li><b>No watermark</b></li>
+              <li>Streamer layout (facecam + gameplay)</li>
+              <li>Captions, reaction text, all 6 styles</li>
+              <li>Slow-mo, shake, flash, speed control</li>
+              <li>Bulk make &amp; export, saved templates</li>
+              <li>Shorts up to 3 minutes</li>
+            </ul>
+          </article>
+          <article class="plan founder reveal">
+            <div class="ribbon gold">First 100 only</div>
+            <h3>Founding member</h3>
+            <p class="amount"><b>$79</b><span>once</span></p>
+            <p class="plan-sub">Pro forever, plus every future feature. Waitlist only.</p>
+            <a class="btn btn-gold btn-block" href="#waitlist">Claim a spot</a>
+            <ul>
+              <li>Everything in Pro, <b>for life</b></li>
+              <li>Auto-captions from speech (coming)</li>
+              <li>Fast PC export (coming)</li>
+              <li>Founder badge &amp; early access</li>
+            </ul>
+          </article>
+        </div>
+        <p class="fine center">Pro launches soon with a 7-day free trial. Cancel anytime.</p>
+      </div>
+    </section>
+
+    <!-- WAITLIST -->
+    <section class="section waitlist" id="waitlist">
+      <div class="container narrow reveal">
+        <img src="assets/img/logo.svg" alt="" width="72" height="72" class="wl-logo">
+        <h2>Be first in line for Pro.</h2>
+        <p class="lead">Join the waitlist for launch-day access and a shot at the <b>$79 lifetime</b> founding-member deal.</p>
+        <form class="wl-form" id="wl-form" novalidate>
+          <label class="sr" for="wl-email">Email</label>
+          <input id="wl-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required>
+          <input type="text" name="company" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
+          <button class="btn btn-primary btn-lg" type="submit">Join the waitlist</button>
+        </form>
+        <p class="wl-msg" id="wl-msg" role="status" aria-live="polite"></p>
+        <p class="fine">No spam. One email when Pro launches.</p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <div class="container narrow">
+        <header class="sec-head reveal"><p class="kicker">FAQ</p><h2>Questions, answered.</h2></header>
+        <div class="faq reveal">
+          <details><summary>Does it work with GTA 6?</summary><p>Yes. Clip Heist works with footage from any game, and it shines with fast, chaotic open-world gameplay: chases, crashes, explosions and everything that goes wrong in the best way. It works just as well with shooters, racing games and stream VODs.</p></details>
+          <details><summary>Can I clip other streamers?</summary><p>Yes, as long as you have permission. Lots of streamers run clipping programs and pay clippers based on views. Clip Heist’s streamer layout and full-VOD scanning are built for exactly that.</p></details>
+          <details><summary>Do my videos get uploaded anywhere?</summary><p>No. Clip Heist processes everything on your own device. Your footage never touches our servers, which also means there are no upload waits or storage limits.</p></details>
+          <details><summary>What do I need to run it?</summary><p>A modern browser: Chrome, Edge, Safari or Firefox on PC, Mac, iPhone or Android. Nothing to install. A downloadable PC app with faster exports is coming.</p></details>
+          <details><summary>Which file types work?</summary><p>MP4, MOV and WebM work everywhere. OBS’s MKV recordings open in Chrome and Edge. If a file won’t open, remux it to MP4 in OBS (File → Remux Recordings).</p></details>
+          <details><summary>Where can I post my clips?</summary><p>Anywhere vertical video lives: YouTube Shorts, TikTok, Instagram Reels, X and Snapchat. Clips export at 9:16 in up to 1080p / 60 fps.</p></details>
+          <details><summary>Can I cancel Pro anytime?</summary><p>Yes. Cancel in a couple of clicks and you keep Pro until the end of your billing period. You can always go back to the free plan.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="final">
+      <div class="container narrow reveal">
+        <h2>Your best moments are already recorded.</h2>
+        <p class="lead">Go find them.</p>
+        <a class="btn btn-primary btn-lg" href="app/">Start clipping free <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container foot-in">
+      <a class="brand" href="#top"><img src="assets/img/logo.svg" alt="" width="28" height="28"><span><b>Clip</b> Heist</span></a>
+      <nav aria-label="Footer"><a href="app/">App</a><a href="#pricing">Pricing</a><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a></nav>
+      <p class="fine">© 2026 Clip Heist. Not affiliated with any game publisher, Twitch, Kick or YouTube. All trademarks belong to their owners.</p>
+    </div>
+  </footer>
+
+  <dialog class="demo" id="demo">
+    <button class="demo-x" id="demo-x" aria-label="Close">✕</button>
+    <video id="demo-video" src="assets/video/promo-voice-720.mp4" controls playsinline preload="none"></video>
+  </dialog>
+
+  <script src="assets/site.js" defer></script>
 </body>
 </html>
