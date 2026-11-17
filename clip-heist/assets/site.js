@@ -90,17 +90,17 @@
       const res = await fetch(WAITLIST_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ email, source: 'website', page: location.pathname, _subject: 'New Clip Heist waitlist signup' }),
+        body: JSON.stringify({ email, source: 'website', page: location.pathname, _subject: 'New Clip Heist email signup' }),
       });
       if (!res.ok) throw new Error(String(res.status));
       form.reset();
-      msg.textContent = "You're on the list 🎉 We'll email you on launch day.";
+      msg.textContent = "You're in 🎉 Watch your inbox for clip tips and updates.";
       msg.classList.add('ok');
     } catch {
       msg.textContent = 'Something went wrong. Please try again.';
       msg.classList.add('err');
     } finally {
-      btn.disabled = false; btn.textContent = 'Join the waitlist';
+      btn.disabled = false; btn.textContent = 'Keep me posted';
     }
   });
 })();
