@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  :root { --bg1:#0B0F1E; --bg2:#2A1352; --ink:#fff; --dim:#A9B0C8; --acc:#FFD43B; --hot:#FF3B5C; --cool:#3BE3FF; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #222; font-family: "Inter Display", "Inter", sans-serif; padding: 40px; display: flex; flex-direction: column; gap: 40px; align-items: flex-start; }
+  .bg { background:
+      radial-gradient(circle at 18% 22%, #FF3B5C40, transparent 38%),
+      radial-gradient(circle at 82% 78%, #3BE3FF30, transparent 40%),
+      radial-gradient(circle at 60% 10%, #FFD43B22, transparent 35%),
+      linear-gradient(135deg, var(--bg1), var(--bg2));
+    position: relative; overflow: hidden; }
+  .grid::before { content: ""; position: absolute; inset: 0;
+    background-image: linear-gradient(#ffffff0c 2px, transparent 2px), linear-gradient(90deg, #ffffff0c 2px, transparent 2px);
+    background-size: var(--g, 80px) var(--g, 80px); }
+  .mark { display: block; filter: drop-shadow(0 0 calc(var(--s) * .08) #FFD43B88); }
+  .word { font-weight: 900; letter-spacing: -0.02em; line-height: .9; color: var(--ink); }
+  .word .hl { background: var(--acc); color: var(--bg1); padding: 0 .12em; border-radius: .1em; display: inline-block; transform: rotate(-2deg); }
+  .live { white-space: nowrap; display: inline-flex; align-items: center; gap: .5em; background: var(--hot); color: #fff; font-weight: 900; border-radius: 999px; padding: .35em .9em; letter-spacing: .04em; }
+  .live i { width: .6em; height: .6em; background: #fff; border-radius: 50%; box-shadow: 0 0 0 .25em #ffffff55; }
+
+  /* profile picture 800x800 (YouTube crops to a circle) */
+  #avatar { width: 800px; height: 800px; display: grid; place-items: center; --g: 64px; }
+  /* banner 2560x1440, everything important inside the 1546x423 safe area */
+  #banner { width: 2560px; height: 1440px; --g: 96px; }
+  #banner .safe { position: absolute; left: 507px; top: 508px; width: 1546px; height: 423px; display: flex; align-items: center; gap: 56px; padding: 0 30px; }
+  #banner .ticker { position: absolute; left: -100px; right: -100px; height: 92px; display: flex; gap: 60px; align-items: center; white-space: nowrap;
+    font-weight: 900; font-size: 46px; letter-spacing: .03em; transform: rotate(-4deg); }
+  #banner .ticker span { opacity: .9 }
+  #banner .ticker b { color: var(--hot); }
+  /* watermark 150x150, transparent */
+  #watermark { width: 150px; height: 150px; display: grid; place-items: center; background: transparent; }
+  /* overlay guide (preview only) */
+  #guide { position: absolute; left: 507px; top: 508px; width: 1546px; height: 423px; outline: 6px dashed #3BFF9D; display: none; }
+</style>
+</head>
+<body>
+<script>
+const BRAND = { first: 'DAILY', second: 'DROP', tagline: 'The world in<br>30 seconds.', sub: 'NEW SHORT EVERY DAY',
+  headlines: ['AI GLASSES BANNED FROM EXAM HALLS', 'MARKETS SLIDE ON AI JITTERS', 'APEC SUMMIT: WHO MEETS WHO', 'EL NIÑO FOOD FEARS', 'BREAKING STORIES, ZERO FLUFF'] };
+Object.assign(BRAND, JSON.parse(new URLSearchParams(location.search).get('brand') || '{}'));
+
+// The mark: a yellow drop with globe latitude lines cut through it, plus a red "live" dot.
+function mark(size) {
+  return `<svg class="mark" style="--s:${size}px" width="${size}" height="${size * 1.12}" viewBox="0 0 100 112">
+    <path fill="#FFD43B" d="M50 4 C50 4 90 47 90 70 A40 40 0 0 1 10 70 C10 47 50 4 50 4 Z"/>
+    <g fill="none" stroke="#0B0F1E" stroke-width="5.5" stroke-linecap="round">
+      <circle cx="50" cy="72" r="23"/>
+      <ellipse cx="50" cy="72" rx="10" ry="23"/>
+      <path d="M27 72 H73"/>
+    </g>
+    <circle cx="84" cy="20" r="11" fill="#FF3B5C" stroke="#0B0F1E" stroke-width="5"/>
+  </svg>`;
+}
+function wordmark(px) {
+  return `<div class="word" style="font-size:${px}px">${BRAND.first}<br><span class="hl">${BRAND.second}</span></div>`;
+}
+const ticker = (top, alt) => `<div class="ticker" style="top:${top}px;background:${alt ? '#FFD43B' : '#0B0F1Ecc'};color:${alt ? '#0B0F1E' : '#fff'}">
+  ${[...BRAND.headlines, ...BRAND.headlines, ...BRAND.headlines].map(h => `<span><b>●</b> ${h}</span>`).join('')}</div>`;
+
+document.body.innerHTML = `
+<div id="avatar" class="bg grid">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:26px;transform:translateY(10px)">
+    ${mark(300)}
+    <div class="word" style="font-size:92px;text-align:center;line-height:1">${BRAND.first} <span class="hl">${BRAND.second}</span></div>
+  </div>
+</div>
+
+<div id="banner" class="bg grid">
+  ${ticker(150, false)}${ticker(1180, true)}
+  <div class="safe">
+    ${mark(300)}
+    ${wordmark(190)}
+    <div style="margin-left:auto;display:flex;flex-direction:column;gap:30px;align-items:flex-start">
+      <div style="color:#fff;font-weight:800;font-size:66px;line-height:1.05;max-width:600px">${BRAND.tagline}</div>
+      <div class="live" style="font-size:40px"><i></i>${BRAND.sub}</div>
+    </div>
+  </div>
+  <div id="guide"></div>
+</div>
+
+<div id="watermark">${mark(120)}</div>`;
+</script>
+</body>
+</html>
