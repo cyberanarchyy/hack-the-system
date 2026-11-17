@@ -37,3 +37,16 @@ curl -LO https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-fil
 
 Good voices: `af_heart`, `af_bella`, `am_michael`, `am_puck`. Spell tricky words phonetically in `say` (e.g. "Soo-nung").
 Set `NO_VOICE=1` to render without narration.
+
+## Long-form YouTube documentaries (16:9)
+Set `"template": "doc.html"` and `"music": "ambient"` in a story. Example: `stories/history-chernobyl.json`.
+
+Scene types: `title`, `chapter` (becomes a YouTube chapter), `photo` (Ken Burns; `contain: true` for maps),
+`statement`, `stat` (count-up number), `clock` (running time stamp with ticks), `graph` (animated line chart),
+`rods`, `reactor` (topic-specific diagrams), `distance`, `timeline`, `end`.
+Per-scene options: `bg` (photo behind graphics), `dark`, `mono`, `zoom`, `focus`/`focusTo`, `tag`, `label`,
+`boom` (low hit in the music), `cut` (hard cut instead of crossfade), `hold`/`min` (extra seconds).
+
+`node render.js stories/<x>.json` writes `<x>.mp4`, `<x>.srt` (upload as YouTube subtitles) and `<x>.chapters.txt` (paste into the description).
+`node tools/preview.js stories/<x>.json preview.png` renders a quick contact sheet (one frame per scene, no audio) for layout checks.
+`node tools/thumbnail.js photo.jpg out.png '{"k":"…","big":"…","sub":"…"}'` makes a 1280x720 thumbnail.

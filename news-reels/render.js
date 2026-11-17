@@ -34,7 +34,7 @@ const wav = path.join(outDir, name + '.wav');
   execFileSync('python3', [path.join(__dirname, 'music.py'), hasVO ? timedPath : storyPath, wav], { stdio: 'inherit' });
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 540, height: 960 } });
-  await page.goto('file://' + path.join(__dirname, 'reel.html'));
+  await page.goto('file://' + path.join(__dirname, story.template || 'reel.html'));
   await page.evaluate(() => document.fonts.ready);
   const total = await page.evaluate(s => init(s), story);
   const frames = Math.round(total * FPS);
@@ -50,17 +50,17 @@ const wav = path.join(outDir, name + '.wav');
     { stdio: ['pipe', 'inherit', 'inherit'] });
 
   for (let f = 0; f < frames; f++) {
-    const url = await page.evaluate(t => frame(t, 0.93), f / FPS);
+    const url = await page.evaluate(t => frame(t, 0.92), f / FPS);
     const buf = Buffer.from(url.split(',')[1], 'base64');
     if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
-    if (f % 150 === 0) process.stdout.write(`frame ${f}/${frames}\n`);
+    if (f % 900 === 0) process.stdout.write(`frame ${f}/${frames}\n`);
   }
   ff.stdin.end();
   await new Promise(r => ff.on('close', r));
   await browser.close();
 
   // thumbnail + caption file alongside the video
-  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '2.5', '-i', outMp4, '-frames:v', '1', outMp4.replace(/\.mp4$/, '.jpg')]);
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(story.thumbAt || 2.5), '-i', outMp4, '-frames:v', '1', outMp4.replace(/\.mp4$/, '.jpg')]);
   fs.writeFileSync(outMp4.replace(/\.mp4$/, '.caption.txt'),
     story.caption + '\n\nSources:\n' + (story.sources || []).join('\n') + '\n');
   console.log('done:', outMp4);

@@ -25,6 +25,8 @@ def env(length, decay):
     tt = np.arange(int(SR * length)) / SR
     return np.exp(-tt / decay), tt
 
+AMBIENT = story.get("music") == "ambient"
+
 # kick
 e, tt = env(0.35, 0.09)
 kick = np.sin(2 * np.pi * (45 + 110 * np.exp(-tt / 0.03)) * tt) * e
@@ -40,6 +42,37 @@ clap = rng.uniform(-1, 1, len(tt)) * e
 roots = [55.0, 43.65, 65.41, 49.0]
 step = 0
 t = 0.0
+if AMBIENT:
+    # slow evolving pad: detuned sines on a minor progression, 8 s per chord, soft crossfades
+    tt = np.arange(n) / SR
+    prog = [(55.0, [1, 1.189, 1.498]), (43.65, [1, 1.26, 1.498]), (48.99, [1, 1.189, 1.498]), (41.2, [1, 1.26, 1.498])]
+    seg = 8.0
+    for k in range(int(total / seg) + 2):
+        root, ch = prog[k % 4]
+        a0, a1 = int(max(0, (k * seg - 2) * SR)), int(min(n, ((k + 1) * seg + 2) * SR))
+        if a0 >= n: break
+        x = tt[a0:a1] - k * seg
+        w = np.clip(np.minimum((x + 2) / 2, (seg + 2 - x) / 2), 0, 1)
+        sig = sum(np.sin(2 * np.pi * root * 2 * r * x * (1 + d)) for r in ch for d in (-0.002, 0.002)) / 6
+        sig += 0.6 * np.sin(2 * np.pi * root * x)
+        mix[a0:a1] += sig * w * (0.6 + 0.4 * np.sin(2 * np.pi * 0.07 * x)) * 0.5
+    # low heartbeat pulse
+    beat_t = 0.0
+    e, tb = env(0.5, 0.12)
+    thump = np.sin(2 * np.pi * (40 + 30 * np.exp(-tb / 0.03)) * tb) * e
+    while beat_t < total:
+        add(thump, beat_t, 0.35); add(thump, beat_t + 0.28, 0.2); beat_t += 2.0
+    # per-scene sound design
+    c = 0.0
+    e, tb = env(3.5, 0.9); boom = np.sin(2 * np.pi * (32 + 50 * np.exp(-tb / 0.08)) * tb) * e + rng.uniform(-1, 1, len(tb)) * np.exp(-tb / 0.25) * 0.4
+    e, tb = env(0.03, 0.006); tick = rng.uniform(-1, 1, len(tb)) * e
+    for sc in story["scenes"]:
+        if sc.get("boom"): add(boom, c + sc.get("boomAt", 0.0), 1.6)
+        if sc["type"] == "clock":
+            k = 0.4
+            while k < sc["dur"] - 0.3: add(tick, c + k, 0.6); k += 1.0
+        c += sc["dur"]
+    t = total  # skip the beat loop
 while t < total:
     bar = int(t / (beat * 4)) % 4
     if step % 4 == 0: add(kick, t, 0.9)
@@ -60,7 +93,7 @@ while t < total:
 
 # whoosh on each scene cut
 c = 0.0
-for d in durs[:-1]:
+for d in ([] if AMBIENT else durs[:-1]):
     c += d
     e_len = 0.35
     tt = np.arange(int(SR * e_len)) / SR

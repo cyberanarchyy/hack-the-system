@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>html,body{margin:0;background:#000}canvas{display:block;width:960px;height:540px}</style></head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+// Long-form 16:9 documentary renderer. Deterministic: render(t) draws the frame at time t.
+const W = 1920, H = 1080;
+const ctx = document.getElementById('c').getContext('2d');
+const FONT = '"Inter Display", "Inter", "Liberation Sans", sans-serif';
+const C = { bg1: '#0A0D18', bg2: '#16112E', ink: '#FFFFFF', dim: '#A9B0C8', acc: '#FFD43B', hot: '#FF3B3B', cool: '#3BE3FF', ok: '#3BFF9D', water: '#2F7BFF' };
+const M = 120; // margin
+
+let story, starts = [], total = 0, GRAIN;
+const IMG = {};
+
+async function init(s) {
+  story = s; starts = []; total = 0;
+  for (const sc of s.scenes) { starts.push(total); total += sc.dur; }
+  const srcs = new Set(); for (const sc of s.scenes) { if (sc.img) srcs.add(sc.img); if (sc.bg) srcs.add(sc.bg); }
+  await Promise.all([...srcs].map(src => new Promise((ok, bad) => { const im = new Image(); im.onload = () => { IMG[src] = im; ok(); }; im.onerror = () => bad(new Error('image failed')); im.src = src; })));
+  GRAIN = document.createElement('canvas'); GRAIN.width = GRAIN.height = 256;
+  const g = GRAIN.getContext('2d'), d = g.createImageData(256, 256);
+  for (let i = 0; i < d.data.length; i += 4) { const v = rand(i * 0.37 + 1) * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  g.putImageData(d, 0, 0);
+  return total;
+}
+
+// ---------- helpers ----------
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const easeOut = x => 1 - Math.pow(1 - clamp(x), 3);
+const easeInOut = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const backOut = x => { x = clamp(x); const c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+function rand(seed) { const x = Math.sin(seed * 12.9898) * 43758.5453; return x - Math.floor(x); }
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function font(w, s) { ctx.font = `${w} ${s}px ${FONT}`; }
+function fade(lt, d = 0, len = 0.6) { return easeOut((lt - d) / len); }
+
+function words(text) { const out = []; let hi = false; for (const part of text.split(/(\*)/)) { if (part === '*') { hi = !hi; continue; } for (const w of part.split(/\s+/)) { if (!w) continue; if (/^[.,!?;:]+$/.test(w) && out.length) out[out.length - 1].w += w; else out.push({ w, hi }); } } return out; }
+function layout(text, size, maxW, weight) {
+  font(weight, size); const sp = ctx.measureText(' ').width; const lines = []; let cur = [], cw = 0;
+  for (const wd of words(text)) { const ww = ctx.measureText(wd.w).width; if (cur.length && cw + sp + ww > maxW) { lines.push({ line: cur, width: cw }); cur = []; cw = 0; } wd.x = cur.length ? cw + sp : 0; wd.width = ww; cw = wd.x + ww; cur.push(wd); }
+  if (cur.length) lines.push({ line: cur, width: cw }); return lines;
+}
+// Word-by-word fade-up text. Returns bottom y.
+function text(str, o, lt) {
+  const { x = M, y, size = 72, maxW = W - 2 * M, align = 'left', delay = 0, stagger = 0.05, weight = 800, color = C.ink, hi = C.acc, lh = 1.15 } = o;
+  const lines = layout(str, size, maxW, weight); font(weight, size); let i = 0, yy = y;
+  for (const L of lines) {
+    const ox = align === 'center' ? x + (maxW - L.width) / 2 : x;
+    for (const wd of L.line) {
+      const p = easeOut((lt - delay - i * stagger) / 0.5);
+      if (p > 0) { ctx.save(); ctx.globalAlpha *= p; ctx.fillStyle = wd.hi ? hi : color; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 20; ctx.fillText(wd.w, ox + wd.x, yy + size + (1 - p) * 24); ctx.restore(); }
+      i++;
+    }
+    yy += size * lh;
+  }
+  return yy;
+}
+function fit(str, size, maxW, weight = 900) { font(weight, size); const w = ctx.measureText(str).width; return w > maxW ? Math.floor(size * maxW / w) : size; }
+
+// ---------- photo ----------
+function drawCover(im, x, y, w, h, focus = [.5, .45], zoom = 1) {
+  const s = Math.max(w / im.width, h / im.height) * zoom, dw = im.width * s, dh = im.height * s;
+  let dx = x + w / 2 - focus[0] * dw, dy = y + h / 2 - focus[1] * dh;
+  dx = Math.min(x, Math.max(x + w - dw, dx)); dy = Math.min(y, Math.max(y + h - dh, dy));
+  ctx.drawImage(im, dx, dy, dw, dh);
+}
+function kenBurns(sc, src, lt) {
+  const p = clamp(lt / sc.dur), e = easeInOut(p);
+  const z0 = sc.zoom ? sc.zoom[0] : 1.02, z1 = sc.zoom ? sc.zoom[1] : 1.14;
+  const f0 = sc.focus || [.5, .45], f1 = sc.focusTo || [f0[0] + (sc.pan || 0.04), f0[1]];
+  drawCover(IMG[src], 0, 0, W, H, [f0[0] + (f1[0] - f0[0]) * e, f0[1] + (f1[1] - f0[1]) * e], z0 + (z1 - z0) * p);
+}
+function grade(dark = 0.35, mono = false) {
+  if (mono) { ctx.save(); ctx.globalCompositeOperation = 'saturation'; ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+  ctx.fillStyle = `rgba(10,13,24,${dark})`; ctx.fillRect(0, 0, W, H);
+  let g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(10,13,24,.55)'); g.addColorStop(.3, 'rgba(10,13,24,0)'); g.addColorStop(.62, 'rgba(10,13,24,0)'); g.addColorStop(1, 'rgba(10,13,24,.85)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = 'rgba(40,60,90,.45)'; ctx.fillRect(0, 0, W, H); ctx.restore();
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, W * .7); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.6)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
+function darkBg(t) {
+  const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, C.bg1); g.addColorStop(1, C.bg2); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(255,255,255,.035)'; ctx.lineWidth = 2; const off = (t * 20) % 80;
+  for (let x = -80 + off; x < W; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+}
+function bgFor(sc, lt, t) { if (sc.bg) { kenBurns(sc, sc.bg, lt); grade(sc.dark ?? 0.72, sc.mono); } else darkBg(t); }
+function tag(str, x, y, lt, col = C.acc, d = 0.2) {
+  if (!str) return; const p = fade(lt, d, .5); font(800, 30); const w = ctx.measureText(str).width;
+  ctx.save(); ctx.globalAlpha *= p; ctx.fillStyle = col; ctx.fillRect(x, y, 6, 44); ctx.fillStyle = 'rgba(10,13,24,.75)'; ctx.fillRect(x + 6, y, (w + 36) * p, 44);
+  ctx.beginPath(); ctx.rect(x, y, w + 50, 44); ctx.clip(); ctx.fillStyle = '#fff'; ctx.fillText(str, x + 24, y + 32); ctx.restore();
+}
+function lowerThird(name, role, lt, d = .6) {
+  const p = fade(lt, d, .5); if (p <= 0) return; const x = M, y = H - 230;
+  font(900, 46); const nw = ctx.measureText(name).width; font(600, 30); const rw = role ? ctx.measureText(role).width : 0; const w = Math.max(nw, rw) + 60;
+  ctx.save(); ctx.globalAlpha *= p; ctx.fillStyle = C.acc; ctx.fillRect(x, y, 8, role ? 110 : 70); ctx.fillStyle = 'rgba(10,13,24,.82)'; ctx.fillRect(x + 8, y, w * p, role ? 110 : 70);
+  ctx.beginPath(); ctx.rect(x, y, w + 10, 120); ctx.clip(); font(900, 46); ctx.fillStyle = '#fff'; ctx.fillText(name, x + 34, y + 52);
+  if (role) { font(600, 30); ctx.fillStyle = C.acc; ctx.fillText(role, x + 34, y + 92); } ctx.restore();
+}
+function credit(str) { if (!str) return; ctx.save(); font(600, 20); ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.textAlign = 'right'; ctx.fillText('PHOTO: ' + str.toUpperCase(), W - 40, H - 30); ctx.restore(); }
+function grain(t) {
+  ctx.save(); ctx.globalAlpha = .06; ctx.globalCompositeOperation = 'overlay';
+  const f = Math.floor(t * 24), ox = -Math.floor(rand(f) * 256), oy = -Math.floor(rand(f + 9) * 256);
+  for (let x = ox; x < W; x += 256) for (let y = oy; y < H; y += 256) ctx.drawImage(GRAIN, x, y); ctx.restore();
+}
+const DROP = new Path2D('M50 4 C50 4 90 47 90 70 A40 40 0 0 1 10 70 C10 47 50 4 50 4 Z');
+function logo(x, y, s, a = 1) {
+  ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.scale(s / 100, s / 100); ctx.fillStyle = C.acc; ctx.fill(DROP);
+  ctx.strokeStyle = C.bg1; ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(50, 72, 23, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.ellipse(50, 72, 10, 23, 0, 0, 7); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(27, 72); ctx.lineTo(73, 72); ctx.stroke(); ctx.fillStyle = C.hot; ctx.beginPath(); ctx.arc(84, 20, 11, 0, 7); ctx.fill(); ctx.restore();
+}
+
+// ---------- scenes ----------
+const SCENES = {
+  title(sc, lt, t) {
+    bgFor(sc, lt, t);
+    const p = fade(lt, .3, 1.2); ctx.save(); ctx.globalAlpha *= p; ctx.textAlign = 'center';
+    font(600, 34); ctx.fillStyle = C.acc; ctx.fillText(sc.kicker || '', W / 2, 380);
+    const sz = fit(sc.title, 230, W - 300, 900); font(900, sz); ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 40;
+    // letter-spaced title
+    const chars = [...sc.title], sp = sz * 0.08; let tw = chars.reduce((a, c) => a + ctx.measureText(c).width + sp, -sp), x = W / 2 - tw / 2; ctx.textAlign = 'left';
+    chars.forEach((c, i) => { const q = fade(lt, .3 + i * .06, .8); ctx.save(); ctx.globalAlpha *= q; ctx.fillText(c, x, 380 + sz * 0.95 + (1 - q) * 30); ctx.restore(); x += ctx.measureText(c).width + sp; });
+    ctx.shadowBlur = 0; ctx.fillStyle = C.acc; const lw = 600 * fade(lt, 1.2, 1); ctx.fillRect(W / 2 - lw / 2, 380 + sz * 1.15, lw, 5);
+    ctx.textAlign = 'center'; font(600, 46); ctx.fillStyle = '#fff'; ctx.globalAlpha *= fade(lt, 1.6, 1); ctx.fillText(sc.subtitle || '', W / 2, 380 + sz * 1.15 + 80);
+    ctx.restore(); credit(sc.credit);
+  },
+  chapter(sc, lt, t) {
+    bgFor(sc, lt, t);
+    const p = fade(lt, .2, .8); ctx.save(); ctx.globalAlpha *= p;
+    font(800, 34); ctx.fillStyle = C.acc; ctx.fillText(`CHAPTER ${String(sc.n).padStart(2, '0')}`, M, 470);
+    ctx.fillRect(M, 495, 140 * fade(lt, .4, .8), 5); ctx.restore();
+    text(sc.title, { y: 520, size: 120, weight: 900, delay: .5, stagger: .12 }, lt);
+    credit(sc.credit);
+  },
+  photo(sc, lt, t) {
+    if (sc.contain) {
+      // whole image (e.g. a map) on a blurred, darkened copy of itself
+      ctx.save(); ctx.filter = 'blur(30px)'; drawCover(IMG[sc.img], -60, -60, W + 120, H + 120, [.5, .5], 1); ctx.restore(); grade(.7);
+      const im = IMG[sc.img], z = 1 + .06 * clamp(lt / sc.dur), bh = (H - 160) * z, bw = im.width * bh / im.height;
+      const x = sc.containX || W - M - bw, y = H / 2 - bh / 2;
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 50; ctx.globalAlpha *= fade(lt, .1, .6); ctx.drawImage(im, x, y, bw, bh); ctx.restore();
+    } else { kenBurns(sc, sc.img, lt); grade(sc.dark ?? 0.15, sc.mono); }
+    tag(sc.tag, M, 90, lt);
+    if (sc.text) text(sc.text, { y: sc.textY || 700, size: sc.size || 64, maxW: sc.textW || 1200, delay: .5, stagger: .04 }, lt);
+    if (sc.label) lowerThird(sc.label.name, sc.label.role, lt);
+    credit(sc.credit);
+  },
+  statement(sc, lt, t) {
+    bgFor(sc, lt, t); tag(sc.tag, M, 90, lt);
+    const lines = layout(sc.text, sc.size || 96, sc.maxW || 1500, 900).length, h = lines * (sc.size || 96) * 1.15;
+    text(sc.text, { y: H / 2 - h / 2 - 20, size: sc.size || 96, weight: 900, maxW: sc.maxW || 1500, delay: .3, stagger: .08 }, lt);
+    credit(sc.credit);
+  },
+  stat(sc, lt, t) {
+    bgFor(sc, lt, t); tag(sc.tag, M, 90, lt);
+    const p = easeOut((lt - .3) / 1.6), v = sc.value * p;
+    const str = (sc.prefix || '') + (sc.decimals ? v.toFixed(sc.decimals) : Math.round(v).toLocaleString('en-US')) + (sc.suffix || '');
+    ctx.save(); ctx.globalAlpha *= fade(lt, .2, .4); const sz = fit(str, 260, W - 2 * M);
+    font(900, sz); ctx.fillStyle = sc.color === 'hot' ? C.hot : C.acc; ctx.shadowColor = ctx.fillStyle + '66'; ctx.shadowBlur = 50; ctx.fillText(str, M, 560); ctx.restore();
+    text(sc.label, { y: 610, size: 58, weight: 700, maxW: 1400, delay: 1, stagger: .04 }, lt);
+    credit(sc.credit);
+  },
+  clock(sc, lt, t) {
+    darkBg(t);
+    // digital clock that runs from `from` to `to` (hh:mm:ss) over the scene
+    const toS = s => s.split(':').reduce((a, b) => a * 60 + +b, 0), f = toS(sc.from), e = toS(sc.to);
+    const runFor = sc.runFor || Math.max(.1, sc.dur - 1.2);
+    const cur = Math.floor(f + (e - f) * clamp((lt - .4) / runFor));
+    const hh = String(Math.floor(cur / 3600)).padStart(2, '0'), mm = String(Math.floor(cur / 60) % 60).padStart(2, '0'), ss = String(cur % 60).padStart(2, '0');
+    const alarm = sc.alarm && cur >= e;
+    ctx.save(); ctx.textAlign = 'center'; font(900, 300);
+    ctx.fillStyle = alarm ? (Math.floor(lt * 4) % 2 ? C.hot : '#7a1010') : '#fff'; ctx.shadowColor = alarm ? C.hot : 'rgba(255,255,255,.3)'; ctx.shadowBlur = alarm ? 80 : 30;
+    ctx.globalAlpha *= fade(lt, 0, .5); ctx.fillText(`${hh}:${mm}:${ss}`, W / 2, 600); ctx.shadowBlur = 0;
+    font(700, 46); ctx.fillStyle = C.acc; ctx.fillText(sc.date || '', W / 2, 300);
+    ctx.restore();
+    if (sc.text) text(sc.text, { y: 700, size: 56, weight: 700, align: 'center', delay: .8, stagger: .05 }, lt);
+  },
+  graph(sc, lt, t) {
+    darkBg(t); tag(sc.tag, M, 90, lt);
+    // reactor power over time; points: [label, MW]; reveal across scene
+    const pts = sc.points, gx = M + 140, gy = 220, gw = W - 2 * M - 200, gh = 620, max = sc.max || 4000;
+    const yOf = v => gy + gh - Math.min(v, max * 1.25) / max * gh;
+    ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.lineWidth = 2; font(600, 26); ctx.fillStyle = C.dim; ctx.textAlign = 'right';
+    for (let v = 0; v <= max; v += max / 4) { ctx.beginPath(); ctx.moveTo(gx, yOf(v)); ctx.lineTo(gx + gw, yOf(v)); ctx.stroke(); ctx.fillText(v.toLocaleString('en-US') + ' MW', gx - 20, yOf(v) + 9); }
+    if (sc.normal) { ctx.setLineDash([14, 10]); ctx.strokeStyle = C.ok; ctx.beginPath(); ctx.moveTo(gx, yOf(sc.normal)); ctx.lineTo(gx + gw, yOf(sc.normal)); ctx.stroke(); ctx.setLineDash([]); ctx.textAlign = 'left'; ctx.fillStyle = C.ok; ctx.fillText('FULL POWER', gx + 10, yOf(sc.normal) - 14); }
+    const q = clamp((lt - .5) / (sc.dur - 1.5)), n = pts.length - 1, upto = q * n;
+    ctx.lineWidth = 8; ctx.lineJoin = 'round'; ctx.strokeStyle = C.acc; ctx.shadowColor = C.acc; ctx.shadowBlur = 20; ctx.beginPath();
+    let ex = gx, ey = yOf(pts[0][1]);
+    for (let i = 0; i <= n; i++) {
+      const x = gx + gw * i / n, y = yOf(pts[i][1]);
+      if (i <= upto) { i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); ex = x; ey = y; }
+      else { const f = upto - (i - 1); if (f > 0) { const px = gx + gw * (i - 1) / n, py = yOf(pts[i - 1][1]); ex = px + (x - px) * f; ey = py + (y - py) * f; ctx.lineTo(ex, ey); } break; }
+    }
+    ctx.stroke(); ctx.shadowBlur = 0;
+    const off = pts[Math.min(n, Math.ceil(upto))][1] > max * 1.2 && upto > n - 1;
+    ctx.fillStyle = off ? C.hot : C.acc; ctx.beginPath(); ctx.arc(ex, ey, 14, 0, 7); ctx.fill();
+    // labels under the axis and callouts
+    ctx.textAlign = 'center'; font(700, 26);
+    pts.forEach((p, i) => { const x = gx + gw * i / n; if (i <= upto + .001) { ctx.fillStyle = C.dim; ctx.fillText(p[0], x, gy + gh + 50); if (p[2]) { ctx.fillStyle = p[1] > max ? C.hot : '#fff'; font(800, 30); ctx.fillText(p[2], Math.min(Math.max(x, gx + 150), gx + gw - 150), Math.max(yOf(p[1]) - 34, gy - 10)); font(700, 26); } } });
+    if (off) { ctx.save(); font(900, 64); ctx.fillStyle = C.hot; ctx.globalAlpha *= .6 + .4 * Math.sin(lt * 12); ctx.textAlign = 'center'; ctx.fillText('OFF THE SCALE', gx + gw * .4, gy + 40); ctx.restore(); }
+    ctx.textAlign = 'left';
+  },
+  rods(sc, lt, t) {
+    darkBg(t); tag(sc.tag, M, 90, lt);
+    // a row of `total` rods; `pull` of them withdraw, leaving the rest. Required minimum shown as a line.
+    const n = sc.total || 15, keep = sc.keep || 8, rw = 56, gap = 34, x0 = W / 2 - (n * rw + (n - 1) * gap) / 2, top = 330, len = 420;
+    ctx.fillStyle = 'rgba(47,123,255,.18)'; rr(x0 - 50, top, n * (rw + gap) + 60, len, 24); ctx.fill();
+    ctx.strokeStyle = 'rgba(47,123,255,.6)'; ctx.lineWidth = 4; ctx.stroke();
+    font(700, 28); ctx.fillStyle = C.water; ctx.fillText('REACTOR CORE', x0 - 40, top + len + 45);
+    for (let i = 0; i < n; i++) {
+      const pulled = i % 2 === 1 && Math.floor(i / 2) < n - keep ? 1 : 0; // alternate rods withdraw
+      const order = Math.floor(i / 2), p = pulled ? easeInOut((lt - 1.2 - order * .25) / .8) : 0;
+      const x = x0 + i * (rw + gap), y = top + 40 - p * (len - 60) * .8;
+      ctx.fillStyle = pulled ? 'rgba(255,255,255,.25)' : '#d8dbe6'; rr(x, y, rw, len - 60, 10); ctx.fill();
+    }
+    const left = keep + Math.round((n - keep) * (1 - clamp((lt - 1.2) / ((n - keep) * .25 + .8))));
+    ctx.textAlign = 'center'; font(900, 120); ctx.fillStyle = left < (sc.min || 15) ? C.hot : '#fff';
+    ctx.fillText(String(left), W / 2 - 260, 960); font(700, 30); ctx.fillStyle = C.dim; ctx.fillText('RODS IN THE CORE', W / 2 - 260, 1010);
+    font(900, 120); ctx.fillStyle = C.ok; ctx.fillText(String(sc.min || 15), W / 2 + 260, 960); font(700, 30); ctx.fillStyle = C.dim; ctx.fillText('MINIMUM ALLOWED', W / 2 + 260, 1010);
+    ctx.textAlign = 'left';
+  },
+  reactor(sc, lt, t) {
+    darkBg(t); tag(sc.tag, M, 90, lt);
+    // Simplified RBMK cross-section. mode: "void" (steam -> power), "scram" (rods with graphite tips drop -> spike)
+    const cx = W / 2 + 200, top = 230, cw = 900, ch = 640, x0 = cx - cw / 2, n = 9;
+    const mode = sc.mode || 'void';
+    let steam, power, rodY = 0;
+    if (mode === 'void') { steam = clamp((lt - 1) / (sc.dur - 2)); power = .25 + steam * .6; }
+    else { const T = sc.dur; rodY = easeInOut((lt - T * .3) / (T * .4)) * .45; steam = .5 + clamp((lt - T * .45) / (T * .4)) * .5; power = .5 + Math.pow(clamp((lt - T * .45) / (T * .45)), 2) * 3.4; }
+    // core glow
+    const glow = clamp(power / 3);
+    const g = ctx.createRadialGradient(cx, top + ch * .75, 50, cx, top + ch * .6, 700);
+    g.addColorStop(0, `rgba(255,${200 - glow * 150},${80 - glow * 80},${.25 + glow * .6})`); g.addColorStop(1, 'rgba(255,80,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(x0 - 200, top - 100, cw + 400, ch + 300);
+    ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 5; rr(x0, top, cw, ch, 20); ctx.stroke();
+    for (let i = 0; i < n; i++) {
+      const x = x0 + 60 + i * (cw - 120) / (n - 1);
+      if (i % 2 === 0) { // fuel/water channel
+        ctx.fillStyle = 'rgba(47,123,255,.55)'; ctx.fillRect(x - 22, top + 20, 44, ch - 40);
+        for (let b = 0; b < 26; b++) { // bubbles
+          if (rand(b * 7 + i) > steam) continue;
+          const by = top + ch - 30 - ((lt * (80 + rand(b + i) * 120) + rand(b * 3 + i) * ch) % (ch - 60));
+          ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.beginPath(); ctx.arc(x - 12 + rand(b + i * 3) * 24, by, 5 + rand(b * 5) * 6, 0, 7); ctx.fill();
+        }
+      } else { // control rod with graphite tip below it
+        const ry = top - ch * .55 + (mode === 'scram' ? rodY * ch * 1.2 : 0) + ch * .15;
+        ctx.fillStyle = '#d8dbe6'; ctx.fillRect(x - 18, ry, 36, ch * .55);
+        ctx.fillStyle = '#555c70'; ctx.fillRect(x - 18, ry + ch * .55 + 40, 36, ch * .4);
+        if (sc.labels && i === 3) {
+          font(700, 26); ctx.fillStyle = '#fff'; ctx.textAlign = 'right';
+          ctx.fillText('ABSORBER', x0 - 30, ry + ch * .3); ctx.fillStyle = '#9aa1b5'; ctx.fillText('GRAPHITE TIP', x0 - 30, ry + ch * .55 + 40 + ch * .2);
+          ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0 - 20, ry + ch * .3 - 8); ctx.lineTo(x - 22, ry + ch * .3 - 8); ctx.moveTo(x0 - 20, ry + ch * .75 + 32); ctx.lineTo(x - 22, ry + ch * .75 + 32); ctx.stroke(); ctx.textAlign = 'left';
+        }
+      }
+    }
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, top); ctx.fillStyle = C.bg1; ctx.fill(); ctx.restore();
+    // power meter on the left
+    const mx = M, my = 300, mh = 560, pv = clamp(power / 4);
+    ctx.fillStyle = 'rgba(255,255,255,.1)'; rr(mx, my, 70, mh, 14); ctx.fill();
+    ctx.fillStyle = pv > .5 ? C.hot : C.acc; rr(mx, my + mh * (1 - pv), 70, mh * pv, 14); ctx.fill();
+    font(800, 28); ctx.fillStyle = '#fff'; ctx.fillText('POWER', mx - 4, my - 24);
+    font(800, 28); ctx.fillStyle = C.water; ctx.fillText('STEAM ' + Math.round(steam * 100) + '%', mx + 100, my + mh);
+    if (mode === 'scram') { const fl = clamp((lt - (sc.dur - .45)) / .3); if (fl > 0) { ctx.fillStyle = `rgba(255,255,255,${fl})`; ctx.fillRect(0, 0, W, H); } }
+    if (sc.caption) text(sc.caption, { x: mx + 100, y: my, size: 44, weight: 800, maxW: 360, delay: .6, stagger: .05 }, lt);
+  },
+  distance(sc, lt, t) {
+    bgFor(sc, lt, t); tag(sc.tag, M, 90, lt);
+    const a = [420, 760], b = [1500, 300], p = easeInOut((lt - .8) / 2.2);
+    ctx.fillStyle = C.hot; ctx.beginPath(); ctx.arc(a[0], a[1], 18, 0, 7); ctx.fill();
+    for (let k = 0; k < 3; k++) { const r = ((lt * 120 + k * 80) % 240); ctx.strokeStyle = `rgba(255,59,59,${1 - r / 240})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(a[0], a[1], 18 + r, 0, 7); ctx.stroke(); }
+    ctx.setLineDash([18, 14]); ctx.strokeStyle = C.acc; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p); ctx.stroke(); ctx.setLineDash([]);
+    if (p >= 1) { ctx.fillStyle = C.acc; ctx.beginPath(); ctx.arc(b[0], b[1], 18, 0, 7); ctx.fill(); }
+    font(900, 48); ctx.fillStyle = '#fff'; ctx.fillText(sc.from, a[0] - 60, a[1] + 80);
+    ctx.globalAlpha *= clamp(p * 3 - 2); ctx.fillText(sc.to, b[0] - 200, b[1] - 50); ctx.globalAlpha = 1;
+    ctx.save(); ctx.translate((a[0] + b[0]) / 2, (a[1] + b[1]) / 2); ctx.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]));
+    font(900, 64); ctx.fillStyle = C.acc; ctx.textAlign = 'center'; ctx.fillText(Math.round(sc.km * p).toLocaleString('en-US') + ' km', 0, -30); ctx.restore();
+    credit(sc.credit);
+  },
+  timeline(sc, lt, t) {
+    bgFor(sc, lt, t); tag(sc.tag, M, 90, lt);
+    const ev = sc.events, y = 560, x0 = M + 40, x1 = W - M - 40, p = easeInOut((lt - .3) / 1.2);
+    ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + (x1 - x0) * p, y); ctx.stroke();
+    const step = (sc.dur - 2) / ev.length;
+    ev.forEach((e, i) => {
+      const x = x0 + (x1 - x0) * (i + .5) / ev.length, q = backOut((lt - 1 - i * step) / .5); if (q <= 0) return;
+      ctx.save(); ctx.globalAlpha *= clamp(q); ctx.fillStyle = e[2] ? C.hot : C.acc; ctx.beginPath(); ctx.arc(x, y, 16 * q, 0, 7); ctx.fill();
+      ctx.textAlign = 'center'; font(900, 48); ctx.fillStyle = e[2] ? C.hot : C.acc; ctx.fillText(e[0], x, y - 50);
+      const ls = layout(e[1], 30, 230, 700); font(700, 30); ctx.fillStyle = '#fff';
+      ls.forEach((L, k) => ctx.fillText(L.line.map(w => w.w).join(' '), x, y + 70 + k * 38));
+      ctx.restore();
+    });
+    credit(sc.credit);
+  },
+  end(sc, lt, t) {
+    bgFor(sc, lt, t);
+    logo(W / 2 - 70, 230, 140, fade(lt, .2));
+    ctx.save(); ctx.textAlign = 'center'; ctx.globalAlpha *= fade(lt, .4); font(900, 96); ctx.fillStyle = '#fff'; ctx.fillText(story.brand || 'DAILY DROP', W / 2, 520);
+    font(600, 44); ctx.fillStyle = C.acc; ctx.fillText(sc.subtitle || '', W / 2, 600); ctx.restore();
+    const q = backOut((lt - 1) / .5); if (q > 0) {
+      ctx.save(); ctx.translate(W / 2, 760); ctx.scale(q, q); ctx.fillStyle = C.hot; rr(-220, -55, 440, 110, 55); ctx.fill();
+      ctx.fillStyle = '#fff'; font(900, 48); ctx.textAlign = 'center'; ctx.fillText('SUBSCRIBE', 0, 17); ctx.restore();
+    }
+    credit(sc.credit);
+  }
+};
+
+function drawScene(i, lt, t) { const sc = story.scenes[i]; ctx.save(); SCENES[sc.type](sc, lt, t); ctx.restore(); }
+
+function render(t) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.shadowBlur = 0; ctx.textAlign = 'left';
+  let i = starts.length - 1; while (i > 0 && t < starts[i]) i--;
+  const sc = story.scenes[i], lt = t - starts[i], XF = sc.cut ? 0 : 0.6;
+  if (i > 0 && lt < XF) {
+    // crossfade from previous scene (keeps its motion going)
+    const prev = story.scenes[i - 1]; drawScene(i - 1, prev.dur + lt, t);
+    ctx.globalAlpha = easeInOut(lt / XF); drawScene(i, lt, t); ctx.globalAlpha = 1;
+  } else drawScene(i, lt, t);
+  if (sc.cut && lt < .12) { ctx.fillStyle = `rgba(255,255,255,${.5 * (1 - lt / .12)})`; ctx.fillRect(0, 0, W, H); }
+  grain(t);
+  // fade in from black / out to black
+  const edge = Math.min(clamp(t / .8), clamp((total - t) / 1.2)); if (edge < 1) { ctx.fillStyle = `rgba(0,0,0,${1 - edge})`; ctx.fillRect(0, 0, W, H); }
+  logo(W - 110, 40, 56, .55);
+}
+
+window.init = init; window.render = render;
+window.frame = (t, q) => { render(t); return document.getElementById('c').toDataURL('image/jpeg', q || 0.9); };
+</script>
+</body>
+</html>

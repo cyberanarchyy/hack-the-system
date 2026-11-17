@@ -1,0 +1,454 @@
+{
+  "template": "doc.html",
+  "brand": "DAILY DROP",
+  "voice": "af_heart",
+  "speed": 1.02,
+  "lead": 0.35,
+  "tail": 0.75,
+  "music": "ambient",
+  "assets": "assets/chernobyl",
+  "thumbAt": 4,
+  "title_youtube": "Chernobyl: How a Safety Test Destroyed a Reactor",
+  "caption": "At 1:23 a.m. on 26 April 1986, a safety test at Chernobyl went catastrophically wrong. Here's exactly what happened that night, the hidden design flaw that made it possible, and why the disaster still isn't over 40 years later.",
+  "sources": [
+    "https://www-pub.iaea.org/MTCD/Publications/PDF/Pub913e_web.pdf",
+    "https://world-nuclear.org/information-library/safety-and-security/safety-of-plants/chernobyl-accident",
+    "https://world-nuclear.org/information-library/appendices/chernobyl-accident-appendix-1-sequence-of-events",
+    "https://www.who.int/news-room/questions-and-answers/item/radiation-the-chernobyl-accident",
+    "https://www.iaea.org/sites/default/files/publications/magazines/bulletin/bull28-3/28302741822.pdf",
+    "https://www.world-nuclear-news.org/articles/assessment-completed-of-chernobyl-shelter-repair-works",
+    "https://en.wikipedia.org/wiki/Chernobyl_disaster"
+  ],
+  "scenes": [
+    {
+      "type": "title",
+      "dur": 6,
+      "bg": "iaea1986b.jpg",
+      "dark": 0.55,
+      "zoom": [
+        1.05,
+        1.2
+      ],
+      "kicker": "26 APRIL 1986",
+      "title": "CHERNOBYL",
+      "subtitle": "How a safety test destroyed a reactor",
+      "chapterName": "Intro",
+      "say": "At one twenty-three in the morning, on April twenty-sixth, nineteen eighty-six, a safety test at a nuclear power plant in Soviet Ukraine went catastrophically wrong. Within seconds, Reactor Number Four was destroyed. And the outside world wouldn't hear about it for almost three days.",
+      "display": "At 1:23 in the morning, on April 26th, 1986, a safety test at a nuclear power plant in Soviet Ukraine went catastrophically wrong. Within seconds, Reactor Number Four was destroyed. And the outside world wouldn't hear about it for almost three days.",
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "type": "statement",
+      "dur": 4,
+      "bg": "reactor1986.jpg",
+      "dark": 0.8,
+      "zoom": [
+        1.2,
+        1.3
+      ],
+      "text": "This is how a test meant to make the plant *safer* caused the worst nuclear disaster in history.",
+      "say": "This is the story of how a test that was meant to make the plant safer caused the worst nuclear disaster in history.",
+      "focus": [
+        0.5,
+        0.42
+      ]
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 1,
+      "title": "The Test",
+      "bg": "reactorhall.jpg",
+      "dark": 0.75,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "photo",
+      "dur": 6,
+      "img": "reactorhall.jpg",
+      "zoom": [
+        1.02,
+        1.15
+      ],
+      "tag": "THE RBMK-1000",
+      "label": {
+        "name": "AN RBMK REACTOR HALL",
+        "role": "Leningrad plant · same reactor design as Chernobyl"
+      },
+      "say": "Chernobyl's reactors were a Soviet design called the R B M K. Each one produced about three thousand two hundred megawatts of heat. But the design had a dangerous weakness. And the people running it hadn't been properly warned about it.",
+      "display": "Chernobyl's reactors were a Soviet design called the RBMK. Each one produced about 3,200 megawatts of heat. But the design had a dangerous weakness. And the people running it hadn't been properly warned about it."
+    },
+    {
+      "type": "statement",
+      "dur": 5,
+      "tag": "THE NIGHTMARE SCENARIO",
+      "text": "What happens if the power goes out?",
+      "say": "The plant had a nightmare scenario. If outside power ever failed, the pumps pushing cooling water through the reactor would stop. Backup diesel generators would kick in. But they needed close to a minute to get up to speed."
+    },
+    {
+      "type": "photo",
+      "dur": 6,
+      "img": "controlroom.jpg",
+      "zoom": [
+        1.0,
+        1.12
+      ],
+      "tag": "THE IDEA",
+      "label": {
+        "name": "CHERNOBYL CONTROL ROOM",
+        "role": "Unit 3 · same layout as Unit 4 · photo 2010"
+      },
+      "say": "So engineers wanted to test an idea. Could the plant's giant turbine, still spinning after its steam was cut off, make enough electricity to keep the pumps running until the generators took over? The test was scheduled for the afternoon of April twenty-fifth.",
+      "display": "So engineers wanted to test an idea. Could the plant's giant turbine, still spinning after its steam was cut off, make enough electricity to keep the pumps running until the generators took over? The test was scheduled for the afternoon of April 25th."
+    },
+    {
+      "type": "clock",
+      "dur": 6,
+      "from": "14:00:00",
+      "to": "23:10:00",
+      "date": "FRIDAY, 25 APRIL 1986",
+      "text": "The test is *postponed*",
+      "say": "Then came the first problem. A grid controller in Kyiv asked them to wait. It was a Friday, the region needed electricity, and the reactor had to stay online. The test was pushed back by about nine hours. The shift that had prepared for it went home. The night shift would run it instead."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 2,
+      "title": "The Night Shift",
+      "bg": "controlroom.jpg",
+      "dark": 0.78,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "graph",
+      "dur": 8,
+      "tag": "REACTOR POWER, NIGHT OF 25–26 APRIL",
+      "max": 4000,
+      "normal": 3200,
+      "points": [
+        [
+          "23:10",
+          1600,
+          "HALF POWER"
+        ],
+        [
+          "00:05",
+          720
+        ],
+        [
+          "00:28",
+          30,
+          "~30 MW"
+        ],
+        [
+          "01:00",
+          200,
+          "~200 MW"
+        ]
+      ],
+      "say": "Shortly after midnight, as operators lowered the power, it suddenly collapsed, to around thirty megawatts. Almost nothing. The reactor was being choked by xenon, a gas that builds up as power drops, and soaks up the neutrons that keep the chain reaction going. The test plan called for at least seven hundred megawatts."
+    },
+    {
+      "type": "rods",
+      "dur": 7,
+      "tag": "CONTROL RODS",
+      "total": 15,
+      "keep": 8,
+      "min": 15,
+      "say": "To fight back, the operators pulled control rods out of the core. Those are the rods that slow the reaction down. They got power back up to about two hundred megawatts. But the rules said the equivalent of at least fifteen rods had to stay in at all times. By the time the test began, there were about eight."
+    },
+    {
+      "type": "statement",
+      "dur": 4,
+      "bg": "controlroom.jpg",
+      "dark": 0.8,
+      "text": "The reactor was now in a state its own rules *forbade*. The test went ahead anyway.",
+      "say": "The reactor was now in an unstable state that its own operating rules forbade. The test went ahead anyway."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 3,
+      "title": "The Flaw",
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "reactor",
+      "dur": 9,
+      "mode": "void",
+      "tag": "THE POSITIVE VOID COEFFICIENT",
+      "caption": "More steam → more power → more steam",
+      "say": "Here's the flaw. In an R B M K, water does two jobs. It cools the fuel, and it also absorbs neutrons. When the water boils into steam, it absorbs fewer of them. So more steam means more power, which makes more steam. Engineers call this a positive void coefficient. And at low power, that loop was especially dangerous.",
+      "display": "Here's the flaw. In an RBMK, water does two jobs. It cools the fuel, and it also absorbs neutrons. When the water boils into steam, it absorbs fewer of them. So more steam means more power, which makes more steam. Engineers call this a positive void coefficient. And at low power, that loop was especially dangerous."
+    },
+    {
+      "type": "clock",
+      "dur": 7,
+      "from": "01:23:04",
+      "to": "01:23:40",
+      "alarm": true,
+      "date": "SATURDAY, 26 APRIL 1986",
+      "text": "The test begins",
+      "say": "At one twenty-three and four seconds, the test began. Steam to the turbine was shut off. As the turbine slowed down, the pumps slowed with it. Less water flowed through the core. More of it turned to steam. And the power started to climb.",
+      "display": "At 1:23 and 4 seconds, the test began. Steam to the turbine was shut off. As the turbine slowed down, the pumps slowed with it. Less water flowed through the core. More of it turned to steam. And the power started to climb."
+    },
+    {
+      "type": "reactor",
+      "dur": 9,
+      "mode": "scram",
+      "labels": true,
+      "tag": "01:23:40 · AZ-5 PRESSED",
+      "say": "At one twenty-three and forty seconds, someone pressed the emergency shutdown button, known as A Z five. Every control rod began driving back into the core. But the rods had a fatal quirk. Their tips were made of graphite, which speeds the reaction up. For the first few seconds, as the rods slid in, those tips pushed water out of the bottom of the core. And power surged.",
+      "display": "At 1:23 and 40 seconds, someone pressed the emergency shutdown button, known as AZ-5. Every control rod began driving back into the core. But the rods had a fatal quirk. Their tips were made of graphite, which speeds the reaction up. For the first few seconds, as the rods slid in, those tips pushed water out of the bottom of the core. And power surged."
+    },
+    {
+      "type": "graph",
+      "dur": 7,
+      "cut": true,
+      "boom": true,
+      "boomAt": 4.2,
+      "tag": "SECONDS AFTER AZ-5",
+      "max": 4000,
+      "normal": 3200,
+      "points": [
+        [
+          "01:23:04",
+          200
+        ],
+        [
+          "01:23:40",
+          530,
+          "AZ-5"
+        ],
+        [
+          "01:23:43",
+          3500
+        ],
+        [
+          "01:23:44+",
+          40000,
+          ""
+        ]
+      ],
+      "say": "Within seconds, the reactor's power shot far beyond anything it was built for. Fuel shattered. Steam pressure ripped through the core, and a massive explosion blew the reactor's huge lid aside. A second explosion followed moments later."
+    },
+    {
+      "type": "photo",
+      "dur": 6,
+      "img": "reactor1986.jpg",
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "REACTOR 4 · 1986",
+      "say": "Reactor Number Four was open to the sky. Burning graphite and radioactive material were thrown into the air. Two plant workers died that night.",
+      "focus": [
+        0.5,
+        0.42
+      ],
+      "label": {
+        "name": "REACTOR 4 AFTER THE EXPLOSION",
+        "role": "Aerial photo · 1986"
+      }
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 4,
+      "title": "The Aftermath",
+      "bg": "ferris.jpg",
+      "dark": 0.78,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "statement",
+      "dur": 5,
+      "bg": "iaea1986b.jpg",
+      "dark": 0.82,
+      "mono": true,
+      "text": "The firefighters weren't told it was *radiation*.",
+      "say": "Firefighters arrived within minutes. They had no idea what they were facing. Six of them would be among those who died from radiation sickness in the weeks that followed."
+    },
+    {
+      "type": "photo",
+      "dur": 6,
+      "img": "iaea1986c.jpg",
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "tag": "THE FIRST DAYS",
+      "label": {
+        "name": "HELICOPTER OVER THE PLANT",
+        "role": "Chernobyl · 1986"
+      },
+      "say": "Over the next days, helicopters dropped around five thousand tonnes of sand, clay, lead and boron onto the burning core. The graphite fire kept burning for days.",
+      "display": "Over the next days, helicopters dropped around 5,000 tonnes of sand, clay, lead and boron onto the burning core. The graphite fire kept burning for days."
+    },
+    {
+      "type": "photo",
+      "dur": 8,
+      "img": "ferris.jpg",
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "PRIPYAT",
+      "label": {
+        "name": "PRIPYAT",
+        "role": "Abandoned Ferris wheel · photo 2009"
+      },
+      "say": "Three kilometres away was Pripyat, a city of about forty-nine thousand people, built for the plant's workers. Through Saturday, life went on almost as normal. It wasn't until the afternoon of the twenty-seventh, around thirty-six hours after the explosion, that the city was evacuated.",
+      "display": "Three kilometres away was Pripyat, a city of about 49,000 people, built for the plant's workers. Through Saturday, life went on almost as normal. It wasn't until the afternoon of the 27th, around 36 hours after the explosion, that the city was evacuated."
+    },
+    {
+      "type": "stat",
+      "dur": 5,
+      "bg": "ferris.jpg",
+      "dark": 0.8,
+      "value": 49000,
+      "label": "people evacuated from Pripyat. Told to pack for *three days*. They never came back.",
+      "say": "Residents were told to pack for three days. They never came back."
+    },
+    {
+      "type": "distance",
+      "dur": 9,
+      "bg": "forsmark.jpg",
+      "dark": 0.72,
+      "from": "CHERNOBYL",
+      "to": "FORSMARK, SWEDEN",
+      "km": 1100,
+      "tag": "MONDAY, 28 APRIL 1986",
+      "say": "And the rest of the world? On the morning of April twenty-eighth, alarms went off at a nuclear plant in Sweden, more than a thousand kilometres away. Radiation was found on workers' shoes. But it wasn't coming from their reactor. That evening, Soviet television read out a short statement admitting there had been an accident.",
+      "display": "And the rest of the world? On the morning of April 28th, alarms went off at a nuclear plant in Sweden, more than a thousand kilometres away. Radiation was found on workers' shoes. But it wasn't coming from their reactor. That evening, Soviet television read out a short statement admitting there had been an accident."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 5,
+      "title": "The Cost",
+      "bg": "memorial2009.jpg",
+      "dark": 0.78,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "timeline",
+      "dur": 9,
+      "tag": "AFTER THE EXPLOSION",
+      "events": [
+        [
+          "26 APR",
+          "Explosion at 01:23",
+          1
+        ],
+        [
+          "27 APR",
+          "Pripyat evacuated"
+        ],
+        [
+          "28 APR",
+          "Sweden detects radiation"
+        ],
+        [
+          "NOV 1986",
+          "Concrete sarcophagus finished"
+        ],
+        [
+          "2016",
+          "New Safe Confinement"
+        ],
+        [
+          "2025",
+          "Drone strike",
+          1
+        ]
+      ],
+      "say": "In the months that followed, hundreds of thousands of workers, known as liquidators, were sent in to clean up. By November, a concrete sarcophagus had been built over the ruins.",
+      "bg": "iaea2005.jpg",
+      "dark": 0.82,
+      "mono": true
+    },
+    {
+      "type": "photo",
+      "dur": 7,
+      "img": "map.jpg",
+      "contain": true,
+      "tag": "THE FALLOUT",
+      "text": "Around *350,000* people were eventually moved from their homes.",
+      "textW": 740,
+      "textY": 420,
+      "size": 64,
+      "label": {
+        "name": "CONTAMINATION MAP",
+        "role": "Caesium-137 fallout · CIA, 1996"
+      },
+      "say": "Radioactive fallout spread across Ukraine, Belarus and Russia. Around three hundred and fifty thousand people were eventually moved from their homes."
+    },
+    {
+      "type": "stat",
+      "dur": 6,
+      "value": 31,
+      "color": "hot",
+      "label": "deaths in the immediate aftermath: 2 in the explosion, 28 from radiation sickness, 1 heart attack",
+      "say": "Officially, thirty-one people died in the immediate aftermath. The long-term toll is still debated. The World Health Organization has estimated that up to four thousand people among the most exposed could eventually die from radiation-related cancers. Other estimates are far higher."
+    },
+    {
+      "type": "photo",
+      "dur": 7,
+      "img": "nsc.jpg",
+      "zoom": [
+        1.0,
+        1.12
+      ],
+      "tag": "2016",
+      "label": {
+        "name": "THE NEW SAFE CONFINEMENT",
+        "role": "Slid over Reactor 4 in 2016 · photo Oct 2016"
+      },
+      "say": "In twenty sixteen, a giant steel arch called the New Safe Confinement was slid over the old sarcophagus. It's the largest movable land structure ever built, designed to last a hundred years.",
+      "display": "In 2016, a giant steel arch called the New Safe Confinement was slid over the old sarcophagus. It's the largest movable land structure ever built, designed to last a hundred years."
+    },
+    {
+      "type": "statement",
+      "dur": 7,
+      "bg": "nsc.jpg",
+      "dark": 0.78,
+      "zoom": [
+        1.15,
+        1.25
+      ],
+      "tag": "FEBRUARY 2025",
+      "text": "A drone tore a hole in the arch. Repairs: around *€500 million*.",
+      "say": "Then, in February twenty twenty-five, during the war in Ukraine, a drone struck the arch and tore a hole in its roof. The International Atomic Energy Agency says it can no longer fully do its job, though radiation levels outside haven't changed. Repairs are expected to cost around half a billion euros.",
+      "display": "Then, in February 2025, during the war in Ukraine, a drone struck the arch and tore a hole in its roof. The International Atomic Energy Agency says it can no longer fully do its job, though radiation levels outside haven't changed. Repairs are expected to cost around half a billion euros."
+    },
+    {
+      "type": "statement",
+      "dur": 9,
+      "bg": "memorial2009.jpg",
+      "dark": 0.75,
+      "text": "The test didn't create the flaw. It *found* it.",
+      "say": "So what really caused Chernobyl? Early Soviet reports blamed the operators. But a later international investigation concluded that the reactor's design was just as much to blame, along with a culture that kept its flaws quiet. The safety test didn't create the weakness. It found the one that was already there."
+    },
+    {
+      "type": "end",
+      "dur": 6,
+      "bg": "checkpoint.jpg",
+      "dark": 0.8,
+      "subtitle": "History, explained.",
+      "say": "Forty years later, the exclusion zone is still there. If you want more stories like this one, subscribe."
+    }
+  ]
+}

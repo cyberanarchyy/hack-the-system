@@ -26,14 +26,14 @@ def api(**p):
 
 def strip(s): return html.unescape(re.sub(r"<[^>]+>", "", s or "")).strip()
 
-def info(titles, width=1600):
+def info(titles, width=1920):
     r = api(action="query", prop="imageinfo", titles="|".join(titles), iiprop="url|extmetadata|size", iiurlwidth=width)
     out = []
     for pg in r["query"]["pages"]:
         if "imageinfo" not in pg: continue
         ii = pg["imageinfo"][0]; m = ii.get("extmetadata", {})
         lic = strip(m.get("LicenseShortName", {}).get("value"))
-        out.append(dict(title=pg["title"], url=ii["url"], w=ii["width"], h=ii["height"],
+        out.append(dict(title=pg["title"], url=(ii.get("thumburl") if ii["width"] > width else None) or ii["url"], w=ii["width"], h=ii["height"],
                         license=lic, artist=strip(m.get("Artist", {}).get("value"))[:80],
                         date=strip(m.get("DateTimeOriginal", {}).get("value"))[:20], ok=bool(OK.match(lic))))
     return out

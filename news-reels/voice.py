@@ -17,6 +17,7 @@ name = os.path.splitext(os.path.basename(story_path))[0]
 story = json.load(open(story_path))
 k = Kokoro(os.path.join(HERE, "models/kokoro-v1.0.fp16.onnx"), os.path.join(HERE, "models/voices-v1.0.bin"))
 voice, speed = story.get("voice", "af_heart"), story.get("speed", 1.1)
+LEAD, TAIL = story.get("lead", LEAD), story.get("tail", TAIL)
 
 clips, sr = [], 24000
 for sc in story["scenes"]:
@@ -36,7 +37,7 @@ for sc in story["scenes"]:
             st = LEAD + span * acc / sum(wts); acc += wt
             words.append({"w": w, "s": round(st, 3), "e": round(LEAD + span * acc / sum(wts), 3)})
         sc["words"] = words
-    sc["dur"] = round(max(sc["dur"] if not sc.get("say") else 0, LEAD + len(a) / sr + TAIL), 2)
+    sc["dur"] = round(max(sc.get("min", 0), sc["dur"] if not sc.get("say") else 0, LEAD + len(a) / sr + TAIL + sc.get("hold", 0)), 2)
 
 total = sum(sc["dur"] for sc in story["scenes"])
 track = np.zeros(int((total + 1) * sr), dtype=np.float32)
@@ -46,4 +47,27 @@ for sc, a in zip(story["scenes"], clips):
 track = track / (np.abs(track).max() + 1e-9) * 0.95
 sf.write(os.path.join(out_dir, name + ".vo.wav"), track, sr)
 json.dump(story, open(os.path.join(out_dir, name + ".timed.json"), "w"), indent=2)
+
+# subtitles (.srt): ~8-word lines from the estimated word timings
+def ts(x):
+    ms = int(round(x * 1000)); return f"{ms//3600000:02}:{ms//60000%60:02}:{ms//1000%60:02},{ms%1000:03}"
+cues, t0 = [], 0.0
+for sc in story["scenes"]:
+    ws = sc.get("words", []); i = 0
+    while i < len(ws):
+        j = i
+        while j < len(ws) - 1 and j - i < 9 and not ws[j]["w"][-1] in ".?!": j += 1
+        cues.append((t0 + ws[i]["s"], t0 + ws[j]["e"] + 0.15, " ".join(w["w"] for w in ws[i:j + 1]))); i = j + 1
+    t0 += sc["dur"]
+with open(os.path.join(out_dir, name + ".srt"), "w") as f:
+    for k, (a, b, txt) in enumerate(cues, 1): f.write(f"{k}\n{ts(a)} --> {ts(b)}\n{txt}\n\n")
+# YouTube chapters
+chap, t0 = [], 0.0
+for sc in story["scenes"]:
+    if sc["type"] in ("title", "chapter") and sc.get("chapterName", sc.get("title")):
+        chap.append(f"{int(t0//60)}:{int(t0%60):02} {sc.get('chapterName') or sc['title']}")
+    t0 += sc["dur"]
+if chap:
+    if not chap[0].startswith("0:00"): chap[0] = "0:00 " + chap[0].split(" ", 1)[1]
+    open(os.path.join(out_dir, name + ".chapters.txt"), "w").write("\n".join(chap) + "\n")
 print(f"voiceover: {total:.1f}s, voice={voice}")
