@@ -4,7 +4,7 @@
 
   // Where waitlist emails are sent. Paste a Formspree (or similar) form URL here,
   // e.g. 'https://formspree.io/f/abcdwxyz'. Until it's set, signups are not saved.
-  const WAITLIST_ENDPOINT = '';
+  const WAITLIST_ENDPOINT = 'https://formspree.io/f/xbgoorgo';
 
   document.documentElement.classList.add('js');
   const $ = (s, r = document) => r.querySelector(s);
@@ -67,7 +67,7 @@
     const email = form.email.value.trim();
     msg.className = 'wl-msg';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { msg.textContent = 'Enter a valid email address.'; msg.classList.add('err'); form.email.focus(); return; }
-    if (form.company.value) return; // bot
+    if (form._gotcha.value) return; // bot
     if (!WAITLIST_ENDPOINT) { msg.textContent = 'The waitlist opens very soon. Check back shortly!'; msg.classList.add('err'); return; }
     const btn = form.querySelector('button');
     btn.disabled = true; btn.textContent = 'Joining…';
@@ -75,7 +75,7 @@
       const res = await fetch(WAITLIST_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ email, source: 'website', page: location.pathname }),
+        body: JSON.stringify({ email, source: 'website', page: location.pathname, _subject: 'New Clip Heist waitlist signup' }),
       });
       if (!res.ok) throw new Error(String(res.status));
       form.reset();
