@@ -66,13 +66,13 @@
     const pro = document.querySelector('.plan.pro .btn'), founder = document.querySelector('.plan.founder .btn');
     const period = () => (document.querySelector('[data-bill].on')?.dataset.bill === 'year' ? 'year' : 'month');
     if (pro && h.prices.month) {
-      pro.textContent = 'Start 7-day free trial';
+      pro.textContent = 'Get Pro';
       pro.href = 'app/?buy=month';
       pro.addEventListener('click', () => { pro.href = `app/?buy=${period()}`; });
     }
     if (founder && h.prices.lifetime) { founder.textContent = 'Become a founder · $79'; founder.href = 'app/?buy=lifetime'; }
     const note = document.querySelector('#pricing .fine.center');
-    if (note) note.textContent = '7-day free trial on Pro. Cancel anytime in a couple of clicks.';
+    if (note) note.textContent = 'Cancel anytime in a couple of clicks. Secure checkout by Stripe.';
   }).catch(() => {});
 
   // Waitlist.
