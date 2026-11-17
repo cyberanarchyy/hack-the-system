@@ -22,7 +22,8 @@
     "PUBLIC_URL": "https://getclipheist.app",
     "EMAIL_FROM": "Clip Heist <login@getclipheist.app>",
     "TRIAL_DAYS": "7",
-    // Stripe Price IDs (safe to publish). Test-mode IDs first, live IDs at launch.
+    // Optional Stripe Price IDs. Leave empty and the server finds or creates the
+    // Clip Heist products in Stripe automatically (by lookup key).
     "PRICE_MONTHLY": "",
     "PRICE_YEARLY": "",
     "PRICE_LIFETIME": ""

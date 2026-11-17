@@ -45,7 +45,30 @@ function json(data, status = 200) {
 function fail(message, status = 400) { const e = new Error(message); e.status = status; e.expose = true; throw e; }
 async function body(request) { try { return await request.json(); } catch { return {}; } }
 const origin = (env, url) => env.PUBLIC_URL || url.origin;
-const priceIds = (env) => ({ month: env.PRICE_MONTHLY || '', year: env.PRICE_YEARLY || '', lifetime: env.PRICE_LIFETIME || '' });
+// The three plans. If no Price ID is configured, the server finds (or creates) the
+// product in Stripe by its lookup key, so nothing has to be set up by hand.
+const PLANS = {
+  month: { env: 'PRICE_MONTHLY', lookup: 'clip_heist_pro_monthly', product: 'Clip Heist Pro', amount: 699, interval: 'month' },
+  year: { env: 'PRICE_YEARLY', lookup: 'clip_heist_pro_yearly', product: 'Clip Heist Pro (Yearly)', amount: 4900, interval: 'year' },
+  lifetime: { env: 'PRICE_LIFETIME', lookup: 'clip_heist_founder_lifetime', product: 'Clip Heist Founding Member', amount: 7900 },
+};
+const DESCRIPTION = 'Unlimited 1080p exports, every highlight, streamer layout, captions and effects.';
+const priceIds = (env) => Object.fromEntries(Object.entries(PLANS).map(([k, v]) => [k, env[v.env] || (env.STRIPE_SECRET_KEY ? 'auto' : '')]));
+const priceCache = {};
+
+async function resolvePrice(env, plan) {
+  const cfg = PLANS[plan];
+  if (!cfg) fail('That plan isn’t available.');
+  if (env[cfg.env]) return env[cfg.env];
+  if (priceCache[plan]) return priceCache[plan];
+  const found = await stripe(env, 'GET', 'prices', { 'lookup_keys[0]': cfg.lookup, active: 'true', limit: 1 });
+  if (found.data[0]) return (priceCache[plan] = found.data[0].id);
+  const product = await stripe(env, 'POST', 'products', { name: cfg.product, description: DESCRIPTION, 'metadata[app]': 'clip-heist' });
+  const params = { product: product.id, currency: 'usd', unit_amount: cfg.amount, lookup_key: cfg.lookup, transfer_lookup_key: 'true' };
+  if (cfg.interval) params['recurring[interval]'] = cfg.interval;
+  const price = await stripe(env, 'POST', 'prices', params);
+  return (priceCache[plan] = price.id);
+}
 const validEmail = (e) => typeof e === 'string' && e.length < 200 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
 
 const b64url = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -126,8 +149,7 @@ async function passFor(env, customerId, email) {
 // ---------- routes ----------
 async function checkout(request, env, url) {
   const { plan, email } = await body(request);
-  const price = priceIds(env)[plan];
-  if (!price) fail('That plan isn’t available yet.');
+  const price = await resolvePrice(env, plan);
   const base = origin(env, url);
   const params = {
     mode: plan === 'lifetime' ? 'payment' : 'subscription',
