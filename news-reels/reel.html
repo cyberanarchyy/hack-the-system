@@ -160,7 +160,7 @@ function dropMark(x, y, size, t) {
 }
 
 // ---------- icons ----------
-function icon(name, cx, cy, s, lt) {
+function icon(name, cx, cy, s, lt, sc = {}) {
   const p = backOut(lt / 0.5);
   ctx.save(); ctx.translate(cx, cy); ctx.scale(p, p);
   ctx.lineWidth = 16; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -195,11 +195,40 @@ function icon(name, cx, cy, s, lt) {
     ctx.fillStyle = C.hot; roundRect(-s * 0.6, -s * 0.55, s * 1.2, s * 0.34, 40); ctx.fill();
     ctx.fillRect(-s * 0.6, -s * 0.35, s * 1.2, s * 0.14);
     ctx.fillStyle = '#0B0F1E'; ctx.textAlign = 'center';
-    ctx.font = `900 ${s * 0.62}px ${FONT}`; ctx.fillText('19', 0, s * 0.42);
-    ctx.font = `900 ${s * 0.17}px ${FONT}`; ctx.fillStyle = '#fff'; ctx.fillText('NOV', 0, -s * 0.31);
+    ctx.font = `900 ${s * 0.62}px ${FONT}`; ctx.fillText(sc.day || '19', 0, s * 0.42);
+    ctx.font = `900 ${s * 0.17}px ${FONT}`; ctx.fillStyle = '#fff'; ctx.fillText(sc.month || 'NOV', 0, -s * 0.31);
     ctx.textAlign = 'left';
     ctx.strokeStyle = '#ddd'; ctx.lineWidth = 18;
     for (const x of [-s * 0.3, s * 0.3]) { ctx.beginPath(); ctx.moveTo(x, -s * 0.7); ctx.lineTo(x, -s * 0.45); ctx.stroke(); }
+  } else if (name === 'chip') {
+    // AI chip with pulsing traces
+    ctx.strokeStyle = C.cool; ctx.lineWidth = 10;
+    for (let i = -2; i <= 2; i++) {
+      const o = i * s * 0.17, pulse = ((lt * 1.5 + i * 0.2) % 1);
+      for (const [x1, y1, x2, y2] of [[o, -s * 0.45, o, -s * 0.75], [o, s * 0.45, o, s * 0.75], [-s * 0.45, o, -s * 0.75, o], [s * 0.45, o, s * 0.75, o]]) {
+        ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        ctx.globalAlpha = 1; ctx.fillStyle = C.cool; ctx.beginPath();
+        ctx.arc(x1 + (x2 - x1) * pulse, y1 + (y2 - y1) * pulse, 9, 0, 7); ctx.fill();
+      }
+    }
+    ctx.fillStyle = '#1d2236'; roundRect(-s * 0.5, -s * 0.5, s, s, 40); ctx.fill();
+    ctx.strokeStyle = C.acc; ctx.lineWidth = 12; roundRect(-s * 0.5, -s * 0.5, s, s, 40); ctx.stroke();
+    ctx.fillStyle = C.acc; ctx.textAlign = 'center'; ctx.font = `900 ${s * 0.38}px ${FONT}`;
+    ctx.fillText(sc.chipText || 'AI', 0, s * 0.13); ctx.textAlign = 'left';
+  } else if (name === 'chartdown') {
+    // red line chart crashing down
+    const pts = [[-1, -0.45], [-0.6, -0.55], [-0.25, -0.2], [0.05, -0.32], [0.4, 0.15], [0.7, 0.05], [1, 0.55]];
+    const q = clamp(lt / 1.1);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 4;
+    for (let g = -0.6; g <= 0.6; g += 0.3) { ctx.beginPath(); ctx.moveTo(-s, g * s); ctx.lineTo(s, g * s); ctx.stroke(); }
+    ctx.strokeStyle = C.hot; ctx.lineWidth = 18; ctx.shadowColor = C.hot; ctx.shadowBlur = 30;
+    ctx.beginPath();
+    const n = pts.length - 1, upto = q * n;
+    for (let i = 0; i <= Math.floor(upto); i++) { const [x, y] = pts[i]; i ? ctx.lineTo(x * s, y * s) : ctx.moveTo(x * s, y * s); }
+    const i0 = Math.min(Math.floor(upto), n - 1), f = upto - i0;
+    const ex = pts[i0][0] + (pts[i0 + 1][0] - pts[i0][0]) * f, ey = pts[i0][1] + (pts[i0 + 1][1] - pts[i0][1]) * f;
+    ctx.lineTo(ex * s, ey * s); ctx.stroke(); ctx.shadowBlur = 0;
+    ctx.fillStyle = C.hot; ctx.beginPath(); ctx.arc(ex * s, ey * s, 22, 0, 7); ctx.fill();
   } else if (name === 'alert') {
     const shake = Math.sin(lt * 40) * 6 * clamp(1 - (lt - 0.4) * 1.5);
     ctx.rotate(shake * 0.01);
@@ -215,12 +244,12 @@ function icon(name, cx, cy, s, lt) {
 // ---------- scenes ----------
 const SCENES = {
   hook(sc, lt) {
-    icon(sc.icon, W / 2, 560, 300, lt);
+    icon(sc.icon, W / 2, 560, 300, lt, sc);
     kicker(sc.kicker, 900, lt, C.hot);
     drawText(sc.text, { y: 960, size: 104, delay: 0.25, stagger: 0.09 }, lt);
   },
   big(sc, lt) {
-    icon(sc.icon, W / 2, 540, 260, lt);
+    icon(sc.icon, W / 2, 540, 260, lt, sc);
     kicker(sc.kicker, 860, lt, C.cool);
     const p = backOut((lt - 0.2) / 0.4);
     ctx.save(); ctx.globalAlpha = clamp((lt - 0.2) * 4);
@@ -241,10 +270,11 @@ const SCENES = {
       const nl = layout(it, sz, tw, 750).length, bh = Math.max(150, nl * sz * 1.15 + 64);
       ctx.fillStyle = 'rgba(255,255,255,0.08)'; roundRect(SAFE.left, y, SAFE.right - SAFE.left, bh, 30); ctx.fill();
       const mx = SAFE.left + 75, my = y + bh / 2;
-      ctx.fillStyle = sc.mark === 'x' ? C.hot : C.ok; ctx.beginPath(); ctx.arc(mx, my, 44, 0, 7); ctx.fill();
+      ctx.fillStyle = sc.mark === 'x' ? C.hot : sc.mark === 'dot' ? C.acc : C.ok; ctx.beginPath(); ctx.arc(mx, my, sc.mark === 'dot' ? 22 : 44, 0, 7); ctx.fill();
       ctx.strokeStyle = '#0B0F1E'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.beginPath();
       const q = clamp((lt - d - 0.15) / 0.25);
-      if (sc.mark === 'x') {
+      if (sc.mark === 'dot') {
+      } else if (sc.mark === 'x') {
         ctx.moveTo(mx - 18, my - 18); ctx.lineTo(mx - 18 + 36 * q, my - 18 + 36 * q);
         if (q > 0.5) { ctx.moveTo(mx + 18, my - 18); ctx.lineTo(mx + 18 - 36 * (q - 0.5) * 2, my - 18 + 36 * (q - 0.5) * 2); }
       } else {
@@ -265,7 +295,7 @@ const SCENES = {
       const s = 2.6 - 1.6 * easeIn(p) ;
       ctx.save(); ctx.translate(W / 2 - 40, 900); ctx.rotate(-0.12); ctx.scale(s, s);
       ctx.globalAlpha = clamp(p * 1.5);
-      ctx.font = `900 130px ${FONT}`; const tw = ctx.measureText(sc.stamp).width;
+      ctx.font = `900 ${fitSize(sc.stamp, 130, 700)}px ${FONT}`; const tw = ctx.measureText(sc.stamp).width;
       ctx.strokeStyle = C.hot; ctx.lineWidth = 14; roundRect(-tw / 2 - 40, -110, tw + 80, 160, 20); ctx.stroke();
       ctx.fillStyle = C.hot; ctx.textAlign = 'center'; ctx.fillText(sc.stamp, 0, 20);
       ctx.restore();
