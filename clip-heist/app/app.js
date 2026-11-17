@@ -178,7 +178,7 @@
 
   async function startCheckout(plan) {
     await loadPayments();
-    if (!canBuy(plan)) { toast('Checkout is unavailable right now. Please try again shortly.'); return; }
+    if (!canBuy(plan)) { toast('Pro launches very soon. Join the waitlist!'); setTimeout(() => { location.href = '../#waitlist'; }, 900); return; }
     toast('Opening secure checkout…');
     try {
       const acct = Plan.account();
