@@ -53,6 +53,8 @@ const PLANS = {
   lifetime: { env: 'PRICE_LIFETIME', lookup: 'clip_heist_founder_lifetime', product: 'Clip Heist Founding Member', amount: 7900 },
 };
 const DESCRIPTION = 'Unlimited 1080p exports, every highlight, streamer layout, captions and effects.';
+// Stripe tax category: Software as a Service, personal use. Required by Managed Payments.
+const TAX_CODE = 'txcd_10103000';
 const priceIds = (env) => Object.fromEntries(Object.entries(PLANS).map(([k, v]) => [k, env[v.env] || (env.STRIPE_SECRET_KEY ? 'auto' : '')]));
 const priceCache = {};
 
@@ -61,9 +63,14 @@ async function resolvePrice(env, plan) {
   if (!cfg) fail('That plan isn’t available.');
   if (env[cfg.env]) return env[cfg.env];
   if (priceCache[plan]) return priceCache[plan];
-  const found = await stripe(env, 'GET', 'prices', { 'lookup_keys[0]': cfg.lookup, active: 'true', limit: 1 });
-  if (found.data[0]) return (priceCache[plan] = found.data[0].id);
-  const product = await stripe(env, 'POST', 'products', { name: cfg.product, description: DESCRIPTION, 'metadata[app]': 'clip-heist' });
+  const found = await stripe(env, 'GET', 'prices', { 'lookup_keys[0]': cfg.lookup, active: 'true', limit: 1, 'expand[0]': 'data.product' });
+  if (found.data[0]) {
+    const prod = found.data[0].product;
+    // Products made before the tax code was added get it now.
+    if (prod && typeof prod === 'object' && !prod.tax_code) await stripe(env, 'POST', `products/${prod.id}`, { tax_code: env.TAX_CODE || TAX_CODE });
+    return (priceCache[plan] = found.data[0].id);
+  }
+  const product = await stripe(env, 'POST', 'products', { name: cfg.product, description: DESCRIPTION, tax_code: env.TAX_CODE || TAX_CODE, 'metadata[app]': 'clip-heist' });
   const params = { product: product.id, currency: 'usd', unit_amount: cfg.amount, lookup_key: cfg.lookup, transfer_lookup_key: 'true' };
   if (cfg.interval) params['recurring[interval]'] = cfg.interval;
   const price = await stripe(env, 'POST', 'prices', params);
