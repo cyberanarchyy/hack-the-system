@@ -1,11 +1,31 @@
-// Cloudflare Workers config: serves the Clip Heist website + app as static files
-// at getclipheist.app. Deployed automatically by Cloudflare when this branch changes.
+// Cloudflare Workers config for getclipheist.app.
+// Static files come from ./clip-heist; requests to /api/* run server/worker.js.
+// Deployed automatically by Cloudflare when main changes.
+//
+// Secrets are NOT stored here. Add them in Cloudflare → Workers & Pages → clip-heist →
+// Settings → Variables and Secrets: STRIPE_SECRET_KEY, SESSION_SECRET,
+// and optionally STRIPE_WEBHOOK_SECRET and RESEND_API_KEY.
 {
   "name": "clip-heist",
+  "main": "server/worker.js",
   "compatibility_date": "2026-11-01",
   "assets": {
     "directory": "./clip-heist",
+    "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "html_handling": "auto-trailing-slash"
+    "html_handling": "auto-trailing-slash",
+    "run_worker_first": ["/api/*"]
+  },
+  // Keep secrets set in the dashboard when this file deploys.
+  "keep_vars": true,
+  "vars": {
+    "PUBLIC_URL": "https://getclipheist.app",
+    "EMAIL_FROM": "Clip Heist <login@getclipheist.app>",
+    "TRIAL_DAYS": "7",
+    // Optional Stripe Price IDs. Leave empty and the server finds or creates the
+    // Clip Heist products in Stripe automatically (by lookup key).
+    "PRICE_MONTHLY": "",
+    "PRICE_YEARLY": "",
+    "PRICE_LIFETIME": ""
   }
 }
