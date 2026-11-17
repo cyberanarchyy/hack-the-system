@@ -1,5 +1,5 @@
 // Offline support: serve the app shell from cache, refresh it in the background.
-const CACHE = 'clip-heist-v5';
+const CACHE = 'clip-heist-v7';
 const SHELL = ['./', 'index.html', 'app.js', 'plan.js', 'db.js', 'analyze.js', 'render.js', 'styles.css', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {

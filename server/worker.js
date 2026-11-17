@@ -168,7 +168,7 @@ async function checkout(request, env, url) {
     client_reference_id: 'clip-heist',
   };
   if (plan === 'lifetime') params.customer_creation = 'always';
-  else params['subscription_data[trial_period_days]'] = env.TRIAL_DAYS || 7;
+  else if (Number(env.TRIAL_DAYS) > 0) params['subscription_data[trial_period_days]'] = Number(env.TRIAL_DAYS);
   if (validEmail(email)) params.customer_email = email;
   const session = await stripe(env, 'POST', 'checkout/sessions', params);
   return json({ url: session.url });

@@ -178,7 +178,7 @@
 
   async function startCheckout(plan) {
     await loadPayments();
-    if (!canBuy(plan)) { toast('Pro launches soon. Join the waitlist!'); location.href = '../#waitlist'; return; }
+    if (!canBuy(plan)) { toast('Checkout is unavailable right now. Please try again shortly.'); return; }
     toast('Opening secure checkout…');
     try {
       const acct = Plan.account();
@@ -259,7 +259,7 @@
         <h2>${esc(title)}</h2>
         <p class="muted">${esc(body)}${extra}</p>
         <ul class="perks">${PRO_PERKS.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
-        <button class="btn primary block" data-x="buy" data-plan="month">Start 7-day free trial · $6.99/mo</button>
+        <button class="btn primary block" data-x="buy" data-plan="month">Get Pro · $6.99/month</button>
         <button class="btn block" data-x="buy" data-plan="year">Yearly · $49 <span class="save-tag">save 41%</span></button>
         <button class="link" data-x="buy" data-plan="lifetime">Or $79 once for lifetime Pro</button>
         <button class="link muted-link" data-x="restore">Already paid? Restore purchase</button>
