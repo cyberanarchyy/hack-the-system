@@ -60,6 +60,21 @@
     document.querySelectorAll('[data-month]').forEach((el) => { el.textContent = el.dataset[period]; });
   }));
 
+  // When payments are live, turn the pricing buttons into checkout buttons.
+  fetch('/api/health').then((r) => (r.ok ? r.json() : null)).then((h) => {
+    if (!h || !h.payments) return;
+    const pro = document.querySelector('.plan.pro .btn'), founder = document.querySelector('.plan.founder .btn');
+    const period = () => (document.querySelector('[data-bill].on')?.dataset.bill === 'year' ? 'year' : 'month');
+    if (pro && h.prices.month) {
+      pro.textContent = 'Start 7-day free trial';
+      pro.href = 'app/?buy=month';
+      pro.addEventListener('click', () => { pro.href = `app/?buy=${period()}`; });
+    }
+    if (founder && h.prices.lifetime) { founder.textContent = 'Become a founder · $79'; founder.href = 'app/?buy=lifetime'; }
+    const note = document.querySelector('#pricing .fine.center');
+    if (note) note.textContent = '7-day free trial on Pro. Cancel anytime in a couple of clicks.';
+  }).catch(() => {});
+
   // Waitlist.
   const form = $('#wl-form'), msg = $('#wl-msg');
   form.addEventListener('submit', async (e) => {

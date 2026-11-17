@@ -160,6 +160,97 @@
   };
   const PRO_PERKS = ['All highlights, full-length scans', 'Unlimited exports in 1080p / 60 fps, no watermark', 'Streamer layout (facecam + gameplay)', 'Captions, reaction text and all styles', 'Slow-mo, shake, flash, speed control', 'Bulk make & export, saved templates'];
 
+  // ---------- account & payments ----------
+  let payments = null; // { payments, login, prices } from the server, or false if there is no server
+  async function api(path, data) {
+    const res = await fetch('/api/' + path, { method: data ? 'POST' : 'GET', headers: data ? { 'content-type': 'application/json' } : {}, body: data ? JSON.stringify(data) : undefined });
+    let out = {};
+    try { out = await res.json(); } catch {}
+    if (!res.ok) throw new Error(out.error || 'Something went wrong. Please try again.');
+    return out;
+  }
+  async function loadPayments() {
+    if (payments !== null) return payments;
+    try { payments = await api('health'); } catch { payments = false; }
+    return payments;
+  }
+  const canBuy = (plan) => !!(payments && payments.payments && payments.prices && payments.prices[plan]);
+
+  async function startCheckout(plan) {
+    await loadPayments();
+    if (!canBuy(plan)) { toast('Pro launches soon. Join the waitlist!'); location.href = '../#waitlist'; return; }
+    toast('Opening secure checkout…');
+    try {
+      const acct = Plan.account();
+      const { url } = await api('checkout', { plan, email: acct && acct.email });
+      location.href = url;
+    } catch (e) { toast(e.message); }
+  }
+
+  function saveAccount(a) { Plan.setAccount(a); }
+
+  async function refreshAccount(force = false) {
+    const a = Plan.account();
+    if (!a || !a.pass) return;
+    if (!force && Date.now() - (a.checkedAt || 0) < 864e5) return; // at most daily
+    try { saveAccount(await api('me', { pass: a.pass })); }
+    catch (e) { if (/sign in/i.test(e.message)) saveAccount(null); }
+  }
+
+  // Coming back from Stripe checkout or a sign-in email.
+  async function handleReturn() {
+    const q = new URLSearchParams(location.search);
+    const clean = () => history.replaceState(null, '', location.pathname + location.hash);
+    if (q.get('checkout') === 'cancelled') { clean(); toast('Checkout cancelled. No charge was made.'); return; }
+    const sid = q.get('checkout'), login = q.get('login'), buy = q.get('buy');
+    if (sid || login) {
+      clean();
+      const m = modal('<div class="upsell"><div class="pro-badge">PRO</div><h2>Unlocking Pro…</h2><p class="muted">One second.</p></div>');
+      try {
+        const a = await api(sid ? 'checkout/complete' : 'login/verify', sid ? { sessionId: sid } : { token: login });
+        saveAccount(a);
+        m.close();
+        if (a.pro) welcomePro(a); else toast('No active Pro plan found for ' + (a.email || 'this account'));
+        render();
+      } catch (e) { m.close(); toast(e.message); }
+    } else if (buy) { clean(); startCheckout(buy); }
+  }
+
+  function welcomePro(a) {
+    modal(`<div class="upsell"><div class="pro-badge">PRO</div><h2>Welcome to Clip Heist Pro 🎉</h2>
+      <p class="muted">${a.status === 'trialing' ? 'Your 7-day free trial has started. ' : ''}Everything is unlocked: every highlight, 1080p/60 exports with no watermark, streamer layout, captions and all effects.</p>
+      <button class="btn primary block" data-x="ok">Start clipping</button></div>`, {
+      onMount(el, close) { el.addEventListener('click', (e) => { if (e.target.closest('[data-x]') || e.target === el) close(); }); },
+    });
+  }
+
+  function restoreModal() {
+    modal(`<div class="upsell"><h2>Restore your purchase</h2>
+      <p class="muted">Enter the email you paid with. We’ll send a link that unlocks Pro on this device.</p>
+      <input class="cap-text" id="rs-email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com">
+      <button class="btn primary block" data-x="send">Email me a link</button>
+      <button class="btn ghost block" data-x="no">Cancel</button></div>`, {
+      onMount(el, close) {
+        el.addEventListener('click', async (e) => {
+          const x = e.target.closest('[data-x]');
+          if (!x) { if (e.target === el) close(); return; }
+          if (x.dataset.x === 'no') return close();
+          const email = el.querySelector('#rs-email').value.trim();
+          x.disabled = true; x.textContent = 'Sending…';
+          try { await api('login', { email }); close(); toast('Check your email for the link 📩'); }
+          catch (err) { toast(err.message); x.disabled = false; x.textContent = 'Email me a link'; }
+        });
+      },
+    });
+  }
+
+  async function openPortal() {
+    const a = Plan.account();
+    if (!a) return;
+    toast('Opening billing…');
+    try { const { url } = await api('portal', { pass: a.pass }); location.href = url; } catch (e) { toast(e.message); }
+  }
+
   function upsell(reason, extra = '') {
     const [title, body] = UPSELL[reason] || UPSELL.features;
     modal(`
@@ -168,8 +259,10 @@
         <h2>${esc(title)}</h2>
         <p class="muted">${esc(body)}${extra}</p>
         <ul class="perks">${PRO_PERKS.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
-        <p class="price"><b>$6.99</b>/month <span class="muted">or $49/year · 7-day free trial</span></p>
-        <a class="btn primary block" href="../#pricing" data-x="go">Get Clip Heist Pro</a>
+        <button class="btn primary block" data-x="buy" data-plan="month">Start 7-day free trial · $6.99/mo</button>
+        <button class="btn block" data-x="buy" data-plan="year">Yearly · $49 <span class="save-tag">save 41%</span></button>
+        <button class="link" data-x="buy" data-plan="lifetime">Or $79 once for lifetime Pro</button>
+        <button class="link muted-link" data-x="restore">Already paid? Restore purchase</button>
         ${devMode() ? '<button class="btn block" data-x="dev">🧪 Test: turn on Pro</button>' : ''}
         <button class="btn ghost block" data-x="no">Not now</button>
       </div>`, {
@@ -177,7 +270,8 @@
         el.addEventListener('click', (e) => {
           const x = e.target.closest('[data-x]');
           if (!x && e.target !== el) return;
-          if (x && x.dataset.x === 'go') return;
+          if (x && x.dataset.x === 'buy') { close(); startCheckout(x.dataset.plan); return; }
+          if (x && x.dataset.x === 'restore') { close(); restoreModal(); return; }
           if (x && x.dataset.x === 'dev') { Plan.setPro(true); toast('Pro test mode on'); close(); render(); return; }
           close();
         });
@@ -494,13 +588,26 @@
   }
 
   // ---------- settings ----------
+  function accountCard() {
+    const a = Plan.account();
+    if (a && a.pro && isPro()) {
+      const when = a.renewsAt ? new Date(a.renewsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+      const line = a.plan === 'lifetime' ? 'Lifetime · founding member'
+        : a.status === 'trialing' ? `Free trial · first charge ${when}`
+        : a.cancelAtPeriodEnd ? `Cancels ${when}` : `${a.plan === 'year' ? 'Yearly' : 'Monthly'} · renews ${when}`;
+      return `<div class="card plan pro"><div><b>Clip Heist Pro</b> ✓<br><span class="muted small">${esc(line)}${a.email ? '<br>' + esc(a.email) : ''}</span></div>
+        ${a.plan !== 'lifetime' ? '<button class="btn sm" data-act="portal">Manage</button>' : ''}</div>`;
+    }
+    if (isPro()) return `<div class="card plan pro"><div><b>Clip Heist Pro</b> ✓<br><span class="muted small">Test mode</span></div></div>`;
+    return `<div class="card plan"><div><b>Free plan</b><br><span class="muted small">${Plan.exportsLeft()} of ${Plan.LIMITS.exportsPerWeek} exports left this week</span><br><button class="link muted-link" data-act="restore">Already paid? Restore</button></div><button class="btn primary sm" data-act="upsell" data-r="quality">Go Pro</button></div>`;
+  }
+
   async function renderSettings() {
     const t = settings.template;
     app.innerHTML = `
       <header class="bar"><h1>Settings</h1></header>
       <main class="wrap">
-        ${isPro() ? `<div class="card plan pro"><div><b>Clip Heist Pro</b> ✓<br><span class="muted small">Everything unlocked.</span></div></div>`
-          : `<div class="card plan"><div><b>Free plan</b><br><span class="muted small">${Plan.exportsLeft()} of ${Plan.LIMITS.exportsPerWeek} exports left this week</span></div><button class="btn primary sm" data-act="upsell" data-r="quality">Go Pro</button></div>`}
+        ${accountCard()}
         <div class="card stack">
           <h2>Channel</h2>
           <label class="field">Your handle (shown on every short)<input id="s-handle" placeholder="@yourchannel" value="${esc(settings.handle)}"></label>
@@ -1137,6 +1244,8 @@
     switch (act) {
       case 'go': return go(el.dataset.to);
       case 'upsell': return upsell(el.dataset.r);
+      case 'restore': return restoreModal();
+      case 'portal': return openPortal();
       case 'reset-exports': Plan.resetExports(); toast('Exports reset'); return render();
       case 'open-source': return go('source', { id: el.dataset.id });
       case 'edit': return go('editor', { id: el.dataset.id });
@@ -1341,6 +1450,9 @@
     else if (['clips', 'settings'].includes(name)) view = { name };
     render();
     runScans();
+    loadPayments();
+    handleReturn();
+    refreshAccount().then(() => { if (view.name === 'settings') render(); });
     if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 
