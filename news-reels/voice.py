@@ -57,7 +57,7 @@ for sc in story["scenes"]:
     while i < len(ws):
         j = i
         while j < len(ws) - 1 and j - i < 9 and not ws[j]["w"][-1] in ".?!": j += 1
-        cues.append((t0 + ws[i]["s"], t0 + ws[j]["e"] + 0.15, " ".join(w["w"] for w in ws[i:j + 1]))); i = j + 1
+        cues.append((t0 + ws[i]["s"], t0 + ws[j]["e"] + 0.05, " ".join(w["w"] for w in ws[i:j + 1]))); i = j + 1
     t0 += sc["dur"]
 with open(os.path.join(out_dir, name + ".srt"), "w") as f:
     for k, (a, b, txt) in enumerate(cues, 1): f.write(f"{k}\n{ts(a)} --> {ts(b)}\n{txt}\n\n")
