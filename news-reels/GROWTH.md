@@ -61,7 +61,7 @@ Metricool audience activity for YouTube, by hour (Europe/London):
 | Fri | Case File Short ("Full case file on our channel") | 16:00 |
 | Tue | Teaser Short for the *next* case file | 16:00 |
 | Wed | History or "unsolved" Short | 16:00 |
-| Mon–Fri | Daily Drop news Short (PLAYBOOK.md) | 10:00 |
+| Mon–Fri | Daily Drop news Short: conspiracy / crime stories only (made 08:31 by the news-reel task, reviewed by you) | 10:00 |
 
 Scheduled in Metricool (auto-publish): Paperclip long Thu 19 Nov 16:00 → Paperclip Short Fri 20 Nov 16:00 → Dyatlov teaser Tue 24 Nov 16:00.
 
