@@ -1,0 +1,388 @@
+{
+  "template": "doc.html",
+  "brand": "DAILY DROP",
+  "voice": "af_heart",
+  "speed": 1.02,
+  "lead": 0.35,
+  "tail": 0.75,
+  "music": "ambient",
+  "assets": "assets/paperclip",
+  "thumbAt": 4,
+  "pron": {
+    "Wernher": "Vairner",
+    "von Braun": "fon Brown",
+    "Peenemünde": "Payna-moon-da",
+    "Mittelbau-Dora": "Mittel-bow Dora",
+    "Mittelwerk": "Mittel-vairk",
+    "Strughold": "Stroog-hold",
+    "Dachau": "Dah-cow",
+    "V-2": "V two",
+    "SS": "S S",
+    "NASA": "Nassa",
+    "1945": "nineteen forty-five",
+    "1946": "nineteen forty-six",
+    "1969": "nineteen sixty-nine",
+    "1984": "nineteen eighty-four",
+    "1998": "nineteen ninety-eight",
+    "2006": "two thousand and six"
+  },
+  "title_youtube": "Operation Paperclip: The Nazi Conspiracy That Turned Out to Be TRUE",
+  "caption": "It sounds like a conspiracy theory: after World War II, the US secretly brought Nazi scientists to America, and some of them built the rocket that put men on the Moon. It's real. Case File 002: The Theory vs. The Facts.",
+  "sources": [
+    "https://www.britannica.com/topic/Project-Paperclip",
+    "https://www.archives.gov/iwg/declassified-records/rg-330-defense-secretary",
+    "https://www.pbs.org/wgbh/americanexperience/features/chasing-moon-wernher-von-braun-and-nazis/",
+    "https://airandspace.si.edu/stories/editorial/wonder-weapons-and-slave-labor",
+    "https://www.nationalww2museum.org/war/articles/wernher-von-braun-and-nazi-rocket-program-interview-michael-neufeld-phd-national-air",
+    "https://www.jta.org/archive/rocket-scientist-with-nazi-past-still-trying-to-clear-his-name",
+    "https://www.nbcnews.com/id/wbna12869190",
+    "https://www.history.com/news/what-was-operation-paperclip"
+  ],
+  "scenes": [
+    {
+      "type": "title",
+      "dur": 6,
+      "bg": "apollo.jpg",
+      "dark": 0.6,
+      "zoom": [
+        1.05,
+        1.2
+      ],
+      "focus": [
+        0.45,
+        0.45
+      ],
+      "kicker": "Case file 002 · Operation",
+      "title": "PAPERCLIP",
+      "subtitle": "The theory vs. the facts",
+      "chapterName": "Intro",
+      "say": "Here's a theory that sounds like it came from the darkest corner of the internet. After World War Two, the United States secretly brought Nazi scientists to America. And some of them built the rocket that took men to the Moon. The strange part? It's true."
+    },
+    {
+      "type": "document",
+      "dur": 5,
+      "bg": "team.jpg",
+      "dark": 0.85,
+      "header": "CASE FILE 002",
+      "tilt": -2,
+      "lines": [
+        "THEORY: THE U.S. SECRETLY HIRED",
+        "NAZI SCIENTISTS AND [HID THEIR PASTS]",
+        "",
+        "STATUS: UNDER REVIEW"
+      ],
+      "stamp": "OPEN CASE",
+      "stampAt": 3.2,
+      "say": "This is the theory versus the facts. Case file two. Let's open it."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 1,
+      "label": "FILE",
+      "title": "The Rocket Men",
+      "bg": "v2.jpg",
+      "dark": 0.8,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "photo",
+      "dur": 8,
+      "img": "v2.jpg",
+      "focus": [
+        0.5,
+        0.45
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "PEENEMÜNDE · 1943",
+      "text": "The *V-2*: the world's first long-range ballistic missile.",
+      "textY": 760,
+      "size": 56,
+      "say": "In the last years of the war, Nazi Germany built something no one else had. The V-2, the world's first long-range ballistic missile. It flew to the edge of space and came down on London and Antwerp faster than sound. There was no defense against it."
+    },
+    {
+      "type": "photo",
+      "dur": 8,
+      "img": "vonbraun.jpg",
+      "focus": [
+        0.5,
+        0.3
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "THE ENGINEER",
+      "label": {
+        "name": "WERNHER VON BRAUN",
+        "role": "Technical director, V-2 program"
+      },
+      "say": "The man behind it was a young engineer named Wernher von Braun. He was a member of the Nazi Party, and an officer in the SS. In May 1945, as Germany collapsed, he and his team surrendered to the American army."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 2,
+      "label": "FILE",
+      "title": "The Tunnels",
+      "bg": "tunnel.jpg",
+      "dark": 0.82,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "photo",
+      "dur": 9,
+      "img": "tunnel.jpg",
+      "focus": [
+        0.4,
+        0.55
+      ],
+      "zoom": [
+        1.0,
+        1.12
+      ],
+      "tag": "MITTELBAU-DORA · TODAY",
+      "text": "A V-2 engine, still inside the *tunnels*.",
+      "textY": 760,
+      "size": 56,
+      "say": "But the V-2 had a dark secret. From 1943, it was built underground, in tunnels dug into a mountain in central Germany, by concentration camp prisoners. The camp was called Mittelbau-Dora. This rusted rocket engine is still down there today."
+    },
+    {
+      "type": "stat",
+      "dur": 6,
+      "bg": "tunnel.jpg",
+      "dark": 0.88,
+      "value": 20000,
+      "label": "Estimated prisoners who died at Mittelbau-Dora, out of about 60,000",
+      "tag": "THE COST",
+      "say": "About sixty thousand prisoners were sent there. Historians estimate around twenty thousand of them died, from hunger, disease, exhaustion and executions.",
+      "prefix": "~"
+    },
+    {
+      "type": "statement",
+      "dur": 7,
+      "bg": "tunnel.jpg",
+      "dark": 0.9,
+      "mono": true,
+      "text": "More people died *building* the V-2 than were killed by it as a *weapon*.",
+      "say": "Think about that. Historians believe more people died building the V-2 than were killed by it as a weapon."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 3,
+      "label": "FILE",
+      "title": "Paperclip",
+      "bg": "team.jpg",
+      "dark": 0.82,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "photo",
+      "dur": 9,
+      "img": "team.jpg",
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": [
+        1.0,
+        1.08
+      ],
+      "tag": "FORT BLISS, TEXAS · c. 1946",
+      "text": "The German rocket team, now working for the *U.S. Army*.",
+      "textY": 760,
+      "size": 56,
+      "say": "Instead of being put on trial, the rocket team was shipped to Texas. The Soviet Union was grabbing German scientists too, and Washington didn't want them falling into Soviet hands. The program was code-named Operation Paperclip. The story goes that the name came from the paperclips attached to the files of the scientists they wanted."
+    },
+    {
+      "type": "photo",
+      "dur": 9,
+      "img": "truman.jpg",
+      "focus": [
+        0.5,
+        0.3
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "3 SEPTEMBER 1946",
+      "label": {
+        "name": "HARRY S. TRUMAN",
+        "role": "U.S. President, 1945–1953"
+      },
+      "say": "In September 1946, President Truman approved the program. But with one condition. Anyone who had been more than a nominal member of the Nazi Party, or an active supporter of Nazism, was supposed to be kept out."
+    },
+    {
+      "type": "document",
+      "dur": 9,
+      "bg": "team.jpg",
+      "dark": 0.9,
+      "header": "CASE NOTES · THE DOSSIERS",
+      "tilt": 1.5,
+      "lines": [
+        "SUBJECT: GERMAN SCIENTIST",
+        "NAZI PARTY MEMBER: [YES]",
+        "SS RANK: [YES]",
+        "SECURITY THREAT: [NOT LIKELY]",
+        "RECOMMENDATION: APPROVE"
+      ],
+      "stamp": "APPROVED",
+      "stampAt": 4.6,
+      "say": "So what happened to the scientists with Nazi pasts? Their records were reviewed, and in case after case, the concerns were played down, or left out. Historians describe the security files as whitewashed. More than fifteen hundred German scientists and technicians came to America this way.",
+      "tag": "ILLUSTRATION"
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 4,
+      "label": "FILE",
+      "title": "To the Moon",
+      "bg": "apollo.jpg",
+      "dark": 0.8,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "photo",
+      "dur": 9,
+      "img": "engines.jpg",
+      "focus": [
+        0.55,
+        0.7
+      ],
+      "zoom": [
+        1.0,
+        1.12
+      ],
+      "tag": "NASA · HUNTSVILLE, ALABAMA",
+      "label": {
+        "name": "WERNHER VON BRAUN",
+        "role": "Director, NASA Marshall Space Flight Center"
+      },
+      "say": "And it paid off. Von Braun's team built America's first rockets and satellites. He became a TV star and a national hero, and at NASA, he led the center that designed the Saturn Five. The biggest rocket ever flown at the time."
+    },
+    {
+      "type": "photo",
+      "dur": 8,
+      "img": "apollo.jpg",
+      "focus": [
+        0.45,
+        0.4
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "16 JULY 1969",
+      "text": "Apollo 11. Built on the work of a team that once made the *V-2*.",
+      "textY": 760,
+      "size": 52,
+      "say": "On July sixteenth, 1969, a Saturn Five launched Apollo eleven. Four days later, humans walked on the Moon. A team that had built weapons for Hitler helped put them there."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 5,
+      "label": "FILE",
+      "title": "The Past Returns",
+      "bg": "tunnel.jpg",
+      "dark": 0.85,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "document",
+      "dur": 10,
+      "bg": "engines.jpg",
+      "dark": 0.9,
+      "header": "CASE NOTES · 1984",
+      "tilt": -1.5,
+      "lines": [
+        "SUBJECT: ARTHUR RUDOLPH",
+        "SATURN V PROJECT DIRECTOR",
+        "V-2 PRODUCTION: [MITTELWERK]",
+        "AGREES TO LEAVE THE U.S.",
+        "U.S. CITIZENSHIP: RENOUNCED"
+      ],
+      "stamp": "INVESTIGATED",
+      "stampAt": 5,
+      "say": "The past didn't stay buried. Arthur Rudolph had run V-2 production in the tunnels. In America, he became project director of the Saturn Five, and NASA gave him its Distinguished Service Medal. In 1984, investigated by the Justice Department over the treatment of prisoners, he agreed to give up his citizenship and leave the country. He was never put on trial."
+    },
+    {
+      "type": "statement",
+      "dur": 8,
+      "bg": "team.jpg",
+      "dark": 0.9,
+      "mono": true,
+      "text": "Hubertus Strughold, the *father of space medicine*, was linked to the *Dachau* experiments.",
+      "say": "Hubertus Strughold, another Paperclip scientist, was celebrated as the father of space medicine. Later, he was linked to deadly human experiments at the Dachau concentration camp. He denied any part in them. But in 2006, he was removed from the International Space Hall of Fame. And later, an award named after him was retired."
+    },
+    {
+      "type": "photo",
+      "dur": 8,
+      "img": "team.jpg",
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": [
+        1.08,
+        1.0
+      ],
+      "tag": "1998",
+      "text": "The Paperclip files are now *public*.",
+      "textY": 760,
+      "size": 56,
+      "say": "And in 1998, Congress passed a law forcing the government to release its records on Nazi war criminals. The files on the Paperclip scientists are now in the National Archives, for anyone to read."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 6,
+      "label": "FILE",
+      "title": "The Verdict",
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "verdict",
+      "dur": 8,
+      "bg": "team.jpg",
+      "dark": 0.88,
+      "kicker": "Theory: the U.S. secretly hired Nazi scientists",
+      "stamp": "CONFIRMED",
+      "boom": true,
+      "boomAt": 0.8,
+      "text": "Approved by the President. Documented in the National Archives.",
+      "say": "So, did the United States secretly bring Nazi scientists to America and play down their pasts? Confirmed. It was approved by the President, and the records are now public."
+    },
+    {
+      "type": "verdict",
+      "dur": 9,
+      "bg": "v2.jpg",
+      "dark": 0.88,
+      "kicker": "Bigger theory: Paperclip brought Hitler's secret UFOs",
+      "stamp": "NO EVIDENCE",
+      "boom": true,
+      "boomAt": 0.8,
+      "text": "They brought rockets, jet engines and medicine. Not flying saucers.",
+      "say": "But what about the wilder version? That Paperclip brought back secret Nazi flying saucers, or alien technology? There's no evidence for that. What they brought was rockets, jet engines, and know-how. Which is strange enough."
+    },
+    {
+      "type": "end",
+      "dur": 6,
+      "bg": "apollo.jpg",
+      "dark": 0.82,
+      "subtitle": "The truth, one file at a time.",
+      "say": "Was it worth it? Tell me what you think in the comments. And subscribe for the next case file."
+    }
+  ]
+}
