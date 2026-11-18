@@ -4,8 +4,7 @@ Data: vidIQ keyword research + outlier search (English, worldwide).
 
 ## Channel today (vidIQ, 18 Nov 2026)
 **Daily Drop news** (@dailydropuk): 0 subscribers, 14 views, 1 public video (MKUltra, published 18 Nov, 4:26).
-- The MKUltra video's tags are the generic channel keywords, and the first one has a typo ("onspiracy theories").
-  Better tags: mkultra, project mkultra, cia mind control, mkultra documentary, sidney gottlieb, frank olson,
+- MKUltra tags fixed 18 Nov (were generic keywords with a typo). Now: mkultra, project mkultra, cia mind control, mkultra documentary, sidney gottlieb, frank olson,
   conspiracy theories that turned out to be true, conspiracy theories that are true, declassified documents, cia, cold war history, case file, daily drop
 - Channel name is "Daily Drop news" but the brand is DAILY DROP and the Case Files are the main show. Consider renaming to "DAILY DROP".
 - Competitors now tracked in vidIQ (free plan max is 3): OBX (3.5K subs, +206% subs in 30 days),
@@ -64,7 +63,7 @@ Metricool audience activity for YouTube, by hour (Europe/London):
 | Wed | History or "unsolved" Short | 16:00 |
 | Mon–Fri | Daily Drop news Short (PLAYBOOK.md) | 10:00 |
 
-This week: Paperclip long Thu 19 Nov 16:00 → Paperclip Short Fri 20 Nov 16:00 → Dyatlov teaser Tue 24 Nov 16:00.
+Scheduled in Metricool (auto-publish): Paperclip long Thu 19 Nov 16:00 → Paperclip Short Fri 20 Nov 16:00 → Dyatlov teaser Tue 24 Nov 16:00.
 
 ## Weekly routine
 | Day | Task | vidIQ credits |
