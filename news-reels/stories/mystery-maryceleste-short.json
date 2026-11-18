@@ -1,0 +1,119 @@
+{
+  "brand": "DAILY DROP",
+  "date": "UNSOLVED",
+  "voice": "af_heart",
+  "speed": 1.1,
+  "assets": "assets/maryceleste",
+  "pron": {
+    "Dei Gratia": "Day-ee Grah-tsia",
+    "1872": "eighteen seventy-two",
+    "1861": "eighteen sixty-one"
+  },
+  "caption": "December 1872: a ship found drifting in the Atlantic. Sails up. Cargo untouched. All 10 people gone 👻 What happened on the Mary Celeste? 👇 #maryceleste #ghostship #unsolved #mystery #history #dailydrop",
+  "sources": [
+    "https://www.britannica.com/topic/Mary-Celeste",
+    "https://www.marineinsight.com/the-mystery-of-the-mary-celeste-ghost-ship/",
+    "https://www.todayifoundout.com/index.php/2011/12/december-4th-the-mary-celeste-is-found-completely-abandoned-yet-still-containing-all-its-cargo-plenty-of-food-and-water-and-still-under-sail-the-crew-were-never-seen-again/"
+  ],
+  "scenes": [
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "ship.jpg",
+      "focus": [
+        0.5,
+        0.45
+      ],
+      "zoom": [
+        1.0,
+        1.12
+      ],
+      "kicker": "DECEMBER 1872",
+      "title": "*No one* aboard",
+      "say": "December 1872. A ship is found drifting in the Atlantic. Its sails are up. Its cargo is still there. But all ten people on board are gone."
+    },
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "ship.jpg",
+      "focus": [
+        0.55,
+        0.5
+      ],
+      "zoom": [
+        1.3,
+        1.45
+      ],
+      "kicker": "THE MARY CELESTE",
+      "kickerColor": "cool",
+      "title": "The *lifeboat* was gone",
+      "label": {
+        "name": "MARY CELESTE",
+        "role": "Painted in 1861, when named Amazon"
+      },
+      "say": "The Mary Celeste was found by another ship, the Dei Gratia, between the Azores and Portugal. Her lifeboat was missing, and the last log entry was from more than a week before."
+    },
+    {
+      "type": "photo",
+      "dur": 3,
+      "img": "briggs.jpg",
+      "focus": [
+        0.5,
+        0.25
+      ],
+      "zoom": [
+        1.0,
+        1.12
+      ],
+      "kicker": "THE CAPTAIN",
+      "title": "His *wife and daughter*",
+      "label": {
+        "name": "BENJAMIN BRIGGS",
+        "role": "Captain of the Mary Celeste"
+      },
+      "say": "Captain Benjamin Briggs had brought his wife and young daughter, along with seven crew. None of them was ever seen again."
+    },
+    {
+      "type": "list",
+      "dur": 3,
+      "bg": "ship.jpg",
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "mark": "x",
+      "capY": 1430,
+      "title": "The *theories*:",
+      "items": [
+        "*Pirates*",
+        "A *mutiny*",
+        "*Insurance* fraud",
+        "A *sea monster*"
+      ],
+      "say": "The theories: pirates, a mutiny, insurance fraud, even a sea monster. But a British inquiry in Gibraltar found no evidence of foul play."
+    },
+    {
+      "type": "stamp",
+      "dur": 3,
+      "title": "The verdict:",
+      "stamp": "UNSOLVED",
+      "text": "Best guess: they *abandoned ship* in a panic.",
+      "capY": 1430,
+      "say": "Many historians think the crew feared the ship was sinking, or that the cargo of alcohol was dangerous, and took to the lifeboat. But no one knows for sure. The verdict: unsolved."
+    },
+    {
+      "type": "cta",
+      "dur": 4,
+      "bg": "ship.jpg",
+      "focus": [
+        0.5,
+        0.4
+      ],
+      "text": "What do *you* think happened?",
+      "sub": "Tell me in the comments",
+      "follow": "Follow for more unsolved files",
+      "say": "What do you think happened? Follow for more unsolved files.",
+      "noCaptions": true
+    }
+  ]
+}
