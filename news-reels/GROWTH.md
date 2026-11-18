@@ -50,17 +50,21 @@ declassified documents, cold war history, saturn v, apollo 11, case file, daily 
 **Case File 003 teaser Short**: `Dyatlov Pass: What REALLY Happened in 1959? #shorts #mystery`
 Tags: dyatlov pass, dyatlov pass incident, dyatlov pass mystery, dyatlov pass explained, unsolved mysteries, conspiracy theories, case file
 
-## Upload schedule (default until Metricool has your data)
-Times are US Eastern (most of the English audience for these topics is US/UK/CA).
-| Day | What | Time (ET) |
-|---|---|---|
-| Thu | Case File long video (premiere) | 2:00 pm |
-| Thu | Case File Short ("Full case file on our channel") | 6:00 pm |
-| Sat | Teaser Short for the *next* case file | 12:00 pm |
-| Mon / Wed | History or "unsolved" Short | 12:00 pm |
-| Most days | Daily Drop news Short (PLAYBOOK.md) | morning, within 12 h of the story |
+## Upload schedule (Metricool best-time data, UK time)
+Metricool audience activity for YouTube, by hour (Europe/London):
+- Best slot every weekday: **16:00**. Highest Wed (12,033) and Thu (11,979); Fri 10,698, Tue 10,353, Mon 9,351.
+- Second peak: **10:00** (Thu 10,723, Fri 10,537).
+- Weekends are about half as strong (Sat peak 16:00 = 5,880; Sun 16:00 = 5,648). Don't launch big uploads on weekends.
 
-This week: Case File 002 long Thu 19 Nov 2:00 pm ET → Paperclip Short Thu 6:00 pm → Dyatlov teaser Sat 21 Nov 12:00 pm.
+| Day | What | Time (UK) |
+|---|---|---|
+| Thu | Case File long video | 16:00 |
+| Fri | Case File Short ("Full case file on our channel") | 16:00 |
+| Tue | Teaser Short for the *next* case file | 16:00 |
+| Wed | History or "unsolved" Short | 16:00 |
+| Mon–Fri | Daily Drop news Short (PLAYBOOK.md) | 10:00 |
+
+This week: Paperclip long Thu 19 Nov 16:00 → Paperclip Short Fri 20 Nov 16:00 → Dyatlov teaser Tue 24 Nov 16:00.
 
 ## Weekly routine
 | Day | Task | vidIQ credits |
@@ -68,13 +72,12 @@ This week: Case File 002 long Thu 19 Nov 2:00 pm ET → Paperclip Short Thu 6:00
 | Mon | Research: outliers + keyword check for the next case file (pick by searches ÷ competition) | ~20 |
 | Tue | Script + licensed photos (Commons public domain/CC; primary documents) | 0 |
 | Wed | Render, contact-sheet check, title scoring (3 options) | ~15 |
-| Thu | Publish long + Short; pin a comment asking "what should we open next?" | 0 |
-| Sat | Teaser Short for next case | 0 |
+| Thu/Fri | Publish long (Thu) + Short (Fri); pin a comment asking "what should we open next?" | 0 |
+| Tue | Teaser Short for next case | 0 |
 | Sun | Review: views/CTR/retention per video; comment ideas → next topics | ~5 |
 
 The free vidIQ plan is 150 credits a month (most calls cost 5), so keep the weekly budget around 35.
 
 ## Setup still needed
 1. **vidIQ**: connected ✔
-2. **Metricool**: the brand has no social networks connected. Connect YouTube (and TikTok) at
-   app.metricool.com → Brands → Connections, then the best-time-to-post data and scheduling can be used.
+2. **Metricool**: connected ✔ (brand "Daily Drop", YouTube, Europe/London)
