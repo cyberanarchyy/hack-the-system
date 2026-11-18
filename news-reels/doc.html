@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><style>html,body{margin:0;background:#000}canvas{display:block;width:960px;height:540px}</style></head>
+<head><meta charset="utf-8"><link rel="stylesheet" href="fonts/fonts.css"><style>html,body{margin:0;background:#000}canvas{display:block;width:960px;height:540px}</style></head>
 <body>
 <canvas id="c" width="1920" height="1080"></canvas>
 <script>
 // Long-form 16:9 documentary renderer. Deterministic: render(t) draws the frame at time t.
 const W = 1920, H = 1080;
 const ctx = document.getElementById('c').getContext('2d');
-const FONT = '"Inter Display", "Inter", "Liberation Sans", sans-serif';
-const C = { bg1: '#0A0D18', bg2: '#16112E', ink: '#FFFFFF', dim: '#A9B0C8', acc: '#FFD43B', hot: '#FF3B3B', cool: '#3BE3FF', ok: '#3BFF9D', water: '#2F7BFF' };
+// DAILY DROP "declassified" look
+const FONT = '"Oswald", "Inter Display", "Liberation Sans", sans-serif';
+const TYPE = '"Special Elite", "Courier Prime", monospace';
+const STAMP = '"Black Ops One", "Oswald", sans-serif';
+const C = { bg1: '#0B0B0C', bg2: '#1C1816', ink: '#F2ECDD', dim: '#A39E92', paper: '#EDE6D3', acc: '#E0312A', hot: '#E0312A', cool: '#EDE6D3', ok: '#3BFF9D', water: '#2F7BFF' };
 const M = 120; // margin
 
 let story, starts = [], total = 0, GRAIN;
@@ -23,6 +26,7 @@ async function init(s) {
   const g = GRAIN.getContext('2d'), d = g.createImageData(256, 256);
   for (let i = 0; i < d.data.length; i += 4) { const v = rand(i * 0.37 + 1) * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
   g.putImageData(d, 0, 0);
+  for (const f of ['700 80px Oswald', '500 40px Oswald', '400 40px "Special Elite"', '400 40px "Black Ops One"']) await document.fonts.load(f);
   return total;
 }
 
@@ -73,34 +77,36 @@ function kenBurns(sc, src, lt) {
   drawCover(IMG[src], 0, 0, W, H, [f0[0] + (f1[0] - f0[0]) * e, f0[1] + (f1[1] - f0[1]) * e], z0 + (z1 - z0) * p);
 }
 function grade(dark = 0.35, mono = false) {
+  ctx.save(); ctx.globalCompositeOperation = 'saturation'; ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(0, 0, W, H); ctx.restore();
   if (mono) { ctx.save(); ctx.globalCompositeOperation = 'saturation'; ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0, 0, W, H); ctx.restore(); }
-  ctx.fillStyle = `rgba(10,13,24,${dark})`; ctx.fillRect(0, 0, W, H);
-  let g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(10,13,24,.55)'); g.addColorStop(.3, 'rgba(10,13,24,0)'); g.addColorStop(.62, 'rgba(10,13,24,0)'); g.addColorStop(1, 'rgba(10,13,24,.85)');
+  ctx.fillStyle = `rgba(11,11,12,${dark})`; ctx.fillRect(0, 0, W, H);
+  let g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(11,11,12,.55)'); g.addColorStop(.3, 'rgba(11,11,12,0)'); g.addColorStop(.62, 'rgba(11,11,12,0)'); g.addColorStop(1, 'rgba(11,11,12,.85)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.save(); ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = 'rgba(40,60,90,.45)'; ctx.fillRect(0, 0, W, H); ctx.restore();
+  ctx.save(); ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = 'rgba(120,70,30,.22)'; ctx.fillRect(0, 0, W, H); ctx.restore();
   const v = ctx.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, W * .7); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.6)');
   ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
 }
 function darkBg(t) {
   const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, C.bg1); g.addColorStop(1, C.bg2); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = 'rgba(255,255,255,.035)'; ctx.lineWidth = 2; const off = (t * 20) % 80;
-  for (let x = -80 + off; x < W; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-  for (let y = 0; y < H; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  const rg = ctx.createRadialGradient(W * .8, H * .2, 0, W * .8, H * .2, 1000); rg.addColorStop(0, 'rgba(224,49,42,.13)'); rg.addColorStop(1, 'rgba(224,49,42,0)'); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(237,230,211,.035)'; ctx.lineWidth = 2; const off = (t * 15) % 64;
+  for (let y = -64 + off; y < H; y += 64) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(224,49,42,.12)'; ctx.beginPath(); ctx.moveTo(80, 0); ctx.lineTo(80, H); ctx.stroke();
 }
 function bgFor(sc, lt, t) { if (sc.bg) { kenBurns(sc, sc.bg, lt); grade(sc.dark ?? 0.72, sc.mono); } else darkBg(t); }
 function tag(str, x, y, lt, col = C.acc, d = 0.2) {
-  if (!str) return; const p = fade(lt, d, .5); font(800, 30); const w = ctx.measureText(str).width;
-  ctx.save(); ctx.globalAlpha *= p; ctx.fillStyle = col; ctx.fillRect(x, y, 6, 44); ctx.fillStyle = 'rgba(10,13,24,.75)'; ctx.fillRect(x + 6, y, (w + 36) * p, 44);
-  ctx.beginPath(); ctx.rect(x, y, w + 50, 44); ctx.clip(); ctx.fillStyle = '#fff'; ctx.fillText(str, x + 24, y + 32); ctx.restore();
+  if (!str) return; const p = fade(lt, d, .5); ctx.font = `400 30px ${TYPE}`; const w = ctx.measureText(str).width;
+  ctx.save(); ctx.globalAlpha *= p; ctx.fillStyle = col; ctx.fillRect(x, y, 6, 44); ctx.fillStyle = 'rgba(11,11,12,.75)'; ctx.fillRect(x + 6, y, (w + 36) * p, 44);
+  ctx.beginPath(); ctx.rect(x, y, w + 50, 44); ctx.clip(); ctx.fillStyle = C.paper; ctx.font = `400 30px ${TYPE}`; ctx.fillText(str, x + 24, y + 32); ctx.restore();
 }
 function lowerThird(name, role, lt, d = .6) {
   const p = fade(lt, d, .5); if (p <= 0) return; const x = M, y = H - 230;
-  font(900, 46); const nw = ctx.measureText(name).width; font(600, 30); const rw = role ? ctx.measureText(role).width : 0; const w = Math.max(nw, rw) + 60;
-  ctx.save(); ctx.globalAlpha *= p; ctx.fillStyle = C.acc; ctx.fillRect(x, y, 8, role ? 110 : 70); ctx.fillStyle = 'rgba(10,13,24,.82)'; ctx.fillRect(x + 8, y, w * p, role ? 110 : 70);
+  font(700, 46); const nw = ctx.measureText(name).width; ctx.font = `400 30px ${TYPE}`; const rw = role ? ctx.measureText(role).width : 0; const w = Math.max(nw, rw) + 60;
+  ctx.save(); ctx.globalAlpha *= p; ctx.fillStyle = C.acc; ctx.fillRect(x, y, 8, role ? 110 : 70); ctx.fillStyle = 'rgba(11,11,12,.82)'; ctx.fillRect(x + 8, y, w * p, role ? 110 : 70);
   ctx.beginPath(); ctx.rect(x, y, w + 10, 120); ctx.clip(); font(900, 46); ctx.fillStyle = '#fff'; ctx.fillText(name, x + 34, y + 52);
-  if (role) { font(600, 30); ctx.fillStyle = C.acc; ctx.fillText(role, x + 34, y + 92); } ctx.restore();
+  if (role) { ctx.font = `400 30px ${TYPE}`; ctx.fillStyle = C.paper; ctx.fillText(role, x + 34, y + 92); } ctx.restore();
 }
-function credit(str) { if (!str) return; ctx.save(); font(600, 20); ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.textAlign = 'right'; ctx.fillText('PHOTO: ' + str.toUpperCase(), W - 40, H - 30); ctx.restore(); }
+function credit(str) { if (!str) return; ctx.save(); ctx.font = `400 20px ${TYPE}`; ctx.fillStyle = 'rgba(237,230,211,.5)'; ctx.textAlign = 'right'; ctx.fillText('PHOTO: ' + str.toUpperCase(), W - 40, H - 30); ctx.restore(); }
 function grain(t) {
   ctx.save(); ctx.globalAlpha = .06; ctx.globalCompositeOperation = 'overlay';
   const f = Math.floor(t * 24), ox = -Math.floor(rand(f) * 256), oy = -Math.floor(rand(f + 9) * 256);
@@ -109,8 +115,7 @@ function grain(t) {
 const DROP = new Path2D('M50 4 C50 4 90 47 90 70 A40 40 0 0 1 10 70 C10 47 50 4 50 4 Z');
 function logo(x, y, s, a = 1) {
   ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.scale(s / 100, s / 100); ctx.fillStyle = C.acc; ctx.fill(DROP);
-  ctx.strokeStyle = C.bg1; ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(50, 72, 23, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.ellipse(50, 72, 10, 23, 0, 0, 7); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(27, 72); ctx.lineTo(73, 72); ctx.stroke(); ctx.fillStyle = C.hot; ctx.beginPath(); ctx.arc(84, 20, 11, 0, 7); ctx.fill(); ctx.restore();
+  ctx.fillStyle = C.paper; ctx.fillRect(18, 60, 64, 12); ctx.fillRect(26, 78, 40, 8); ctx.restore();
 }
 
 // ---------- scenes ----------
@@ -118,19 +123,19 @@ const SCENES = {
   title(sc, lt, t) {
     bgFor(sc, lt, t);
     const p = fade(lt, .3, 1.2); ctx.save(); ctx.globalAlpha *= p; ctx.textAlign = 'center';
-    font(600, 34); ctx.fillStyle = C.acc; ctx.fillText(sc.kicker || '', W / 2, 380);
+    ctx.font = `400 38px ${TYPE}`; ctx.fillStyle = C.acc; ctx.fillText((sc.kicker || '').toUpperCase(), W / 2, 380);
     const sz = fit(sc.title, 230, W - 300, 900); font(900, sz); ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 40;
     // letter-spaced title
     const chars = [...sc.title], sp = sz * 0.08; let tw = chars.reduce((a, c) => a + ctx.measureText(c).width + sp, -sp), x = W / 2 - tw / 2; ctx.textAlign = 'left';
     chars.forEach((c, i) => { const q = fade(lt, .3 + i * .06, .8); ctx.save(); ctx.globalAlpha *= q; ctx.fillText(c, x, 380 + sz * 0.95 + (1 - q) * 30); ctx.restore(); x += ctx.measureText(c).width + sp; });
     ctx.shadowBlur = 0; ctx.fillStyle = C.acc; const lw = 600 * fade(lt, 1.2, 1); ctx.fillRect(W / 2 - lw / 2, 380 + sz * 1.15, lw, 5);
-    ctx.textAlign = 'center'; font(600, 46); ctx.fillStyle = '#fff'; ctx.globalAlpha *= fade(lt, 1.6, 1); ctx.fillText(sc.subtitle || '', W / 2, 380 + sz * 1.15 + 80);
+    ctx.textAlign = 'center'; ctx.font = `400 46px ${TYPE}`; ctx.fillStyle = C.paper; ctx.globalAlpha *= fade(lt, 1.6, 1); ctx.fillText(sc.subtitle || '', W / 2, 380 + sz * 1.15 + 80);
     ctx.restore(); credit(sc.credit);
   },
   chapter(sc, lt, t) {
     bgFor(sc, lt, t);
     const p = fade(lt, .2, .8); ctx.save(); ctx.globalAlpha *= p;
-    font(800, 34); ctx.fillStyle = C.acc; ctx.fillText(`CHAPTER ${String(sc.n).padStart(2, '0')}`, M, 470);
+    ctx.font = `400 36px ${TYPE}`; ctx.fillStyle = C.acc; ctx.fillText(`${sc.label || 'CHAPTER'} ${String(sc.n).padStart(2, '0')}`, M, 470);
     ctx.fillRect(M, 495, 140 * fade(lt, .4, .8), 5); ctx.restore();
     text(sc.title, { y: 520, size: 120, weight: 900, delay: .5, stagger: .12 }, lt);
     credit(sc.credit);
@@ -294,14 +299,55 @@ const SCENES = {
     });
     credit(sc.credit);
   },
+  document(sc, lt, t) {
+    bgFor(sc, lt, t); tag(sc.tag, M, 90, lt);
+    // a paper file slides in; typed lines appear; redaction bars strike through chosen words
+    const p = easeOut(lt / .7), dw = 900, dh = 1000, dx = sc.img ? W - M - dw + 40 : W / 2 - dw / 2, dy = 120 + (1 - p) * 300;
+    ctx.save(); ctx.translate(dx + dw / 2, dy + dh / 2); ctx.rotate((sc.tilt ?? -2) * Math.PI / 180); ctx.translate(-dw / 2, -dh / 2);
+    ctx.globalAlpha *= p; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 60; ctx.fillStyle = C.paper; ctx.fillRect(0, 0, dw, dh); ctx.shadowBlur = 0;
+    if (sc.img) { const im = IMG[sc.img]; const s2 = Math.min((dw - 80) / im.width, (dh - 80) / im.height); ctx.globalAlpha *= .95; ctx.drawImage(im, dw / 2 - im.width * s2 / 2, 40, im.width * s2, im.height * s2); }
+    else {
+      ctx.fillStyle = C.acc; ctx.font = `400 34px ${TYPE}`; ctx.fillText(sc.header || 'TOP SECRET', 60, 90);
+      ctx.fillStyle = '#2a2723'; ctx.fillRect(60, 110, dw - 120, 3);
+      (sc.lines || []).forEach((ln, i) => {
+        const q = clamp((lt - .6 - i * .5) / .5); if (q <= 0) return;
+        const y = 180 + i * 78; ctx.font = `400 36px ${TYPE}`; ctx.fillStyle = '#1d1b18';
+        const txt = ln.replace(/\[|\]/g, ''), shown = txt.slice(0, Math.floor(txt.length * q)); ctx.fillText(shown, 60, y);
+        // [bracketed] words get a redaction bar after they are typed
+        let x = 60; for (const part of ln.split(/(\[[^\]]+\])/)) { if (!part) continue; const clean = part.replace(/\[|\]/g, ''); const w = ctx.measureText(clean).width;
+          if (part.startsWith('[')) { const r = clamp((lt - 1.1 - i * .5) / .3); if (r > 0) { ctx.fillStyle = '#0B0B0C'; ctx.fillRect(x - 4, y - 32, (w + 8) * r, 42); ctx.fillStyle = '#1d1b18'; } } x += w; }
+      });
+    }
+    if (sc.stamp) { const r = clamp((lt - (sc.stampAt ?? 2)) / .2); if (r > 0) { const z = 2.2 - 1.2 * easeOut(r); ctx.save(); ctx.translate(dw - 260, dh - 180); ctx.rotate(-.18); ctx.scale(z, z); ctx.globalAlpha *= r * .9;
+      ctx.font = `400 64px ${STAMP}`; const sw = ctx.measureText(sc.stamp).width; ctx.strokeStyle = C.acc; ctx.lineWidth = 8; ctx.strokeRect(-sw / 2 - 24, -62, sw + 48, 86); ctx.fillStyle = C.acc; ctx.textAlign = 'center'; ctx.fillText(sc.stamp, 0, 4); ctx.restore(); } }
+    ctx.restore();
+    if (sc.text) text(sc.text, { y: sc.textY || 420, size: sc.size || 64, maxW: sc.img ? 640 : 1400, delay: .8, stagger: .04 }, lt);
+    credit(sc.credit);
+  },
+  verdict(sc, lt, t) {
+    bgFor(sc, lt, t);
+    ctx.save(); ctx.textAlign = 'center'; ctx.globalAlpha *= fade(lt, .1, .5); ctx.font = `400 40px ${TYPE}`; ctx.fillStyle = C.paper;
+    ctx.fillText((sc.kicker || 'THE VERDICT').toUpperCase(), W / 2, 250); ctx.restore();
+    const r = clamp((lt - .7) / .22);
+    if (r > 0) {
+      const z = 2.6 - 1.6 * easeOut(r); ctx.save(); ctx.translate(W / 2, 520); ctx.rotate(-.1); ctx.scale(z, z); ctx.globalAlpha *= clamp(r * 1.4);
+      ctx.font = `400 170px ${STAMP}`; const sw = ctx.measureText(sc.stamp).width; ctx.strokeStyle = C.acc; ctx.lineWidth = 16;
+      ctx.strokeRect(-sw / 2 - 50, -165, sw + 100, 220); ctx.lineWidth = 5; ctx.strokeRect(-sw / 2 - 30, -145, sw + 60, 180);
+      ctx.fillStyle = C.acc; ctx.textAlign = 'center'; ctx.fillText(sc.stamp, 0, 10); ctx.restore();
+      if (lt - .7 < .5 && r >= 1) { ctx.fillStyle = `rgba(224,49,42,${.3 * (1 - (lt - .92) / .3)})`; ctx.fillRect(0, 0, W, H); }
+    }
+    if (sc.text) text(sc.text, { y: 760, size: 58, weight: 500, align: 'center', delay: 1.4, stagger: .04 }, lt);
+    credit(sc.credit);
+  },
   end(sc, lt, t) {
     bgFor(sc, lt, t);
     logo(W / 2 - 70, 230, 140, fade(lt, .2));
-    ctx.save(); ctx.textAlign = 'center'; ctx.globalAlpha *= fade(lt, .4); font(900, 96); ctx.fillStyle = '#fff'; ctx.fillText(story.brand || 'DAILY DROP', W / 2, 520);
-    font(600, 44); ctx.fillStyle = C.acc; ctx.fillText(sc.subtitle || '', W / 2, 600); ctx.restore();
+    ctx.save(); ctx.globalAlpha *= fade(lt, .4); font(700, 110); const w1 = ctx.measureText('DAILY ').width, w2 = ctx.measureText('DROP').width + 30, x0 = W / 2 - (w1 + w2) / 2;
+    ctx.fillStyle = C.ink; ctx.fillText('DAILY', x0, 520); ctx.fillStyle = C.acc; ctx.fillRect(x0 + w1, 422, w2, 118); ctx.fillStyle = C.paper; ctx.fillText('DROP', x0 + w1 + 15, 520); ctx.textAlign = 'center';
+    ctx.font = `400 44px ${TYPE}`; ctx.fillStyle = C.paper; ctx.fillText((sc.subtitle || '').toUpperCase(), W / 2, 610); ctx.restore();
     const q = backOut((lt - 1) / .5); if (q > 0) {
       ctx.save(); ctx.translate(W / 2, 760); ctx.scale(q, q); ctx.fillStyle = C.hot; rr(-220, -55, 440, 110, 55); ctx.fill();
-      ctx.fillStyle = '#fff'; font(900, 48); ctx.textAlign = 'center'; ctx.fillText('SUBSCRIBE', 0, 17); ctx.restore();
+      ctx.fillStyle = C.paper; ctx.font = `400 46px ${STAMP}`; ctx.textAlign = 'center'; ctx.fillText('SUBSCRIBE', 0, 17); ctx.restore();
     }
     credit(sc.credit);
   }

@@ -1,40 +1,49 @@
-# DAILY DROP: YouTube channel kit
+# DAILY DROP: channel kit ("declassified files" look)
 
-Re-export the art with your own name/tagline:
-```
-node brand/render-brand.js '{"first":"DAILY","second":"DROP","tagline":"The world in<br>30 seconds.","sub":"NEW SHORT EVERY DAY"}'
-```
-Files land in `out/brand/`.
+Re-export the art: `node brand/render-brand.js` writes everything to `out/brand/`.
 
-| File | Where it goes in YouTube Studio |
+| File | Where it goes |
 |---|---|
-| `youtube-profile-800.png` | Customization → Branding → Picture |
+| `youtube-profile-800.png` | YouTube Studio → Customization → Branding → Picture (also TikTok profile photo) |
 | `youtube-banner-2560x1440.png` | Customization → Branding → Banner image |
-| `youtube-watermark-150.png` | Customization → Branding → Video watermark ("Entire video") |
+| `youtube-watermark-150.png` | Customization → Branding → Video watermark |
+| `logo-wide.png` | Wide logo for socials, link-in-bio pages, end cards |
+| `stamp-seal.png` | Transparent "case file" seal for posts and community tab |
 
-## Colors
-| | Hex |
+## Look
+| Role | Value |
 |---|---|
-| Night (background) | `#0B0F1E` → `#2A1352` |
-| Drop yellow (highlight) | `#FFD43B` |
-| Live red | `#FF3B5C` |
-| Signal cyan | `#3BE3FF` |
-| Font | Inter Display, Black (900) / ExtraBold (800) |
+| Ink (background) | `#0B0B0C` |
+| Paper | `#EDE6D3` |
+| Stamp red (highlights, logo) | `#E0312A` / print `#D7261E` |
+| Headlines | Oswald Bold, uppercase |
+| Labels, dates, credits | Special Elite (typewriter) |
+| Stamps and verdicts | Black Ops One |
 
-## Channel name
-DAILY DROP. Suggested handle: `@dailydropnews` (check it's free).
+Fonts are bundled in `fonts/` (SIL Open Font License).
 
-## Channel description
-> The world in 30 seconds. Every day.
+**Logo mark:** a red drop with two paper "redaction bars". **Wordmark:** DAILY + DROP in a red box.
+**Tagline:** *The truth, one file at a time.*
+
+## Series names
+- **Case Files**: conspiracies, "The Theory vs. The Facts", ending on a verdict stamp: CONFIRMED / DEBUNKED / NO EVIDENCE / UNSOLVED
+- **History, explained**: long-form history (Chernobyl and others)
+- **Daily Drop**: news Shorts
+
+## Channel description (YouTube "About")
+> The truth, one file at a time.
 >
-> DAILY DROP turns the biggest, strangest and most important news stories into fast, animated Shorts, with no fluff and no 20-minute rants. Just what happened, why it matters, and the twist nobody's talking about.
+> DAILY DROP opens the files on history's biggest cover-ups, disasters and mysteries, and on today's news. Every conspiracy gets the same treatment: the theory, the evidence, and a verdict. Some turn out to be true. Most don't. You'll know which.
 >
-> 🌍 New Short every day
-> 💬 Drop your take in the comments. We read them.
-> 🔔 Subscribe so you're never the last to know.
+> 🗂️ New case files every week
+> 📰 News Shorts most days
+> 💬 Drop your theory in the comments.
 
-## Keywords (Settings → Channel → Keywords)
-news, daily news, world news, news shorts, current events, breaking news, news explained, tech news, AI news, 30 second news
+## TikTok bio (80 characters max)
+```
+🗂️ The truth, one file at a time
+Conspiracies · history · news
+```
 
-## Shorts title formula
-`<Surprising claim> 😳 #shorts #news` (e.g. *South Korea is checking students' GLASSES 👓 #shorts #news*)
+## Keywords
+conspiracy theories, declassified, true history, cia, mkultra, cold war, history explained, documentary, mysteries, cover up, daily news

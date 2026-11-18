@@ -1,0 +1,377 @@
+{
+  "template": "doc.html",
+  "brand": "DAILY DROP",
+  "voice": "af_heart",
+  "speed": 1.02,
+  "lead": 0.35,
+  "tail": 0.75,
+  "music": "ambient",
+  "assets": "assets/mkultra",
+  "thumbAt": 4,
+  "pron": {
+    "MKUltra": "M K Ultra",
+    "CIA": "C I A",
+    "LSD": "L S D",
+    "1953": "nineteen fifty-three",
+    "1973": "nineteen seventy-three",
+    "1975": "nineteen seventy-five",
+    "1977": "nineteen seventy-seven",
+    "1988": "nineteen eighty-eight"
+  },
+  "title_youtube": "MKUltra: The CIA Mind-Control Conspiracy That Turned Out to Be TRUE",
+  "caption": "It sounds like the wildest conspiracy theory there is: the CIA secretly drugging people with LSD to learn mind control. Except it really happened, and the government admitted it. Case File 001: The Theory vs. The Facts.",
+  "sources": [
+    "https://nsarchive.gwu.edu/briefing-book/dnsa-intelligence/2025-10-30/top-secret-testimony-cias-mkultra-chief-50-years-later",
+    "https://www.cia.gov/library/abbottabad-compound/9D/9D9A27BD7241E2074EAF81C7FC2C86CF_MK.Ultra_Senate.Hearings.pdf",
+    "https://www.congress.gov/94/statute/STATUTE-90/STATUTE-90-Pg3006.pdf",
+    "https://www.fordlibrarymuseum.gov/library/document/0067/1563112.pdf",
+    "https://www.abajournal.com/magazine/article/nov-28-1953-lsd-and-the-death-of-a-cia-scientist",
+    "https://nsarchive.gwu.edu/briefing-book/dnsa-intelligence/2024-12-23/cia-behavior-control-experiments-focus-new-scholarly",
+    "https://en.wikipedia.org/wiki/Operation_Midnight_Climax"
+  ],
+  "scenes": [
+    {
+      "type": "title",
+      "dur": 6,
+      "bg": "cia.jpg",
+      "dark": 0.6,
+      "zoom": [
+        1.05,
+        1.2
+      ],
+      "kicker": "Case file 001",
+      "title": "MKULTRA",
+      "subtitle": "The theory vs. the facts",
+      "chapterName": "Intro",
+      "say": "It sounds like the craziest conspiracy theory there is. The CIA, secretly drugging people with LSD, without telling them, to learn how to control the human mind. Except this one is real. And we know, because the government admitted it."
+    },
+    {
+      "type": "document",
+      "dur": 5,
+      "bg": "cia.jpg",
+      "dark": 0.85,
+      "header": "CASE FILE 001",
+      "tilt": -2,
+      "lines": [
+        "THEORY: THE CIA SECRETLY DRUGGED",
+        "PEOPLE TO RESEARCH [MIND CONTROL]",
+        "",
+        "STATUS: UNDER REVIEW"
+      ],
+      "stamp": "OPEN CASE",
+      "stampAt": 3.2,
+      "say": "This is the theory versus the facts. Case file one. Let's open it."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 1,
+      "label": "FILE",
+      "title": "Brain Warfare",
+      "bg": "dulles.jpg",
+      "dark": 0.8,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "photo",
+      "dur": 7,
+      "img": "dulles.jpg",
+      "focus": [
+        0.5,
+        0.3
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "1953",
+      "label": {
+        "name": "ALLEN DULLES",
+        "role": "CIA Director, 1953–1961"
+      },
+      "say": "It's 1953. The Cold War is at its peak, and American officials are afraid that the Soviet Union and China have found a way to brainwash prisoners. That year, CIA director Allen Dulles approves a top-secret program to find out what's possible."
+    },
+    {
+      "type": "photo",
+      "dur": 7,
+      "img": "gottlieb.jpg",
+      "focus": [
+        0.5,
+        0.35
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "THE CHEMIST",
+      "label": {
+        "name": "SIDNEY GOTTLIEB",
+        "role": "Chemist · ran MKUltra"
+      },
+      "say": "To run it, the CIA picked Sidney Gottlieb, a chemist. One biographer would later call him the CIA's poisoner in chief. The program's code name was MKUltra."
+    },
+    {
+      "type": "document",
+      "dur": 8,
+      "bg": "cia.jpg",
+      "dark": 0.85,
+      "img": "doc2.jpg",
+      "tag": "MKULTRA SUBPROJECT 8 · JUNE 1953",
+      "tilt": 2,
+      "stamp": "DECLASSIFIED",
+      "stampAt": 2.5,
+      "text": "A real MKUltra document: approving research on *LSD*.",
+      "textY": 400,
+      "say": "This is one of the program's real documents, with the CIA's own redactions. It approves a project studying LSD. The surviving records would eventually identify one hundred and forty-nine separate subprojects, at universities, hospitals, and even prisons."
+    },
+    {
+      "type": "stat",
+      "dur": 5,
+      "bg": "doc1.jpg",
+      "dark": 0.86,
+      "value": 149,
+      "label": "MKUltra subprojects identified in the CIA's surviving records",
+      "tag": "THE SCALE",
+      "say": "And many of the people being tested had no idea they were part of an experiment."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 2,
+      "label": "FILE",
+      "title": "The Unwitting",
+      "bg": "olson.jpg",
+      "dark": 0.82,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "photo",
+      "dur": 8,
+      "img": "olson.jpg",
+      "focus": [
+        0.5,
+        0.38
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "NOVEMBER 1953",
+      "label": {
+        "name": "DR. FRANK OLSON",
+        "role": "U.S. Army scientist · died 1953"
+      },
+      "say": "In November 1953, Gottlieb's team secretly slipped LSD into the drinks of a group of scientists at a retreat in Maryland. One of them was Frank Olson, an Army scientist. Over the following days, Olson became paranoid and deeply disturbed."
+    },
+    {
+      "type": "document",
+      "dur": 8,
+      "bg": "olson.jpg",
+      "dark": 0.88,
+      "header": "NEW YORK · 28 NOVEMBER 1953",
+      "tilt": -1.5,
+      "lines": [
+        "SUBJECT: DR. FRANK R. OLSON",
+        "GIVEN LSD WITHOUT HIS KNOWLEDGE",
+        "DIED AFTER FALL FROM HOTEL WINDOW",
+        "TOLD TO FAMILY: [LSD DOSING]"
+      ],
+      "stamp": "CLASSIFIED",
+      "stampAt": 3.4,
+      "say": "Nine days later, he fell to his death from a hotel window in New York, where he'd been taken for treatment. His family was not told about the LSD. Not for twenty-two years."
+    },
+    {
+      "type": "photo",
+      "dur": 9,
+      "img": "cia.jpg",
+      "zoom": [
+        1.0,
+        1.12
+      ],
+      "tag": "1975",
+      "text": "Ford apologized. Congress paid the family *$750,000*.",
+      "textY": 720,
+      "size": 60,
+      "say": "In 1975, a presidential commission revealed that Olson had been given LSD. President Gerald Ford invited the family to the White House and apologized, and Congress later paid them seven hundred and fifty thousand dollars. The family has long believed he was murdered. That has never been proven."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 3,
+      "label": "FILE",
+      "title": "Midnight Climax",
+      "bg": "white.jpg",
+      "dark": 0.82,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "photo",
+      "dur": 7,
+      "img": "white.jpg",
+      "focus": [
+        0.5,
+        0.35
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "SAN FRANCISCO · NEW YORK",
+      "label": {
+        "name": "GEORGE HUNTER WHITE",
+        "role": "Federal narcotics agent · ran CIA safehouses"
+      },
+      "say": "Gottlieb also hired a federal narcotics agent named George Hunter White to run CIA safehouses in San Francisco and New York. In San Francisco, it was called Operation Midnight Climax."
+    },
+    {
+      "type": "statement",
+      "dur": 7,
+      "bg": "white.jpg",
+      "dark": 0.88,
+      "mono": true,
+      "text": "Men were lured in, secretly *drugged*, and watched through a *one-way mirror*.",
+      "say": "Women were paid to bring men back to the apartments. There, the men were secretly given drugs, while agents watched and took notes from behind a one-way mirror."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 4,
+      "label": "FILE",
+      "title": "Montreal",
+      "bg": "doc3.jpg",
+      "dark": 0.85,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "document",
+      "dur": 10,
+      "bg": "doc3.jpg",
+      "dark": 0.9,
+      "header": "SUBPROJECT 68 · MONTREAL",
+      "tilt": 1.5,
+      "lines": [
+        "PSYCHIATRIST: DR. EWEN CAMERON",
+        "DRUG-INDUCED COMAS",
+        "HIGH DOSES OF LSD",
+        "REPEATED ELECTROSHOCK",
+        "RESULT: [LASTING MEMORY LOSS]"
+      ],
+      "stamp": "FUNDED BY CIA",
+      "stampAt": 4.5,
+      "say": "In Canada, the CIA funded the work of psychiatrist Ewen Cameron, as subproject sixty-eight. His patients had come to him for help. Instead, they were put into drug-induced comas, given high doses of LSD, and subjected to repeated electroshock. Many were left with lasting memory loss. In 1988, nine of them won a settlement from the CIA."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 5,
+      "label": "FILE",
+      "title": "The Cover-Up",
+      "bg": "helms.jpg",
+      "dark": 0.82,
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "photo",
+      "dur": 7,
+      "img": "helms.jpg",
+      "focus": [
+        0.5,
+        0.3
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "JANUARY 1973",
+      "label": {
+        "name": "RICHARD HELMS",
+        "role": "CIA Director, 1966–1973"
+      },
+      "say": "In 1973, as scrutiny of the CIA was growing, director Richard Helms ordered the MKUltra files destroyed. Gottlieb's staff carried out the order."
+    },
+    {
+      "type": "document",
+      "dur": 6,
+      "bg": "helms.jpg",
+      "dark": 0.9,
+      "header": "ORDER · JANUARY 1973",
+      "tilt": -2,
+      "lines": [
+        "RE: MKULTRA",
+        "ALL RECORDS TO BE [DESTROYED]",
+        "AUTHORITY: [VERBAL ORDER]"
+      ],
+      "stamp": "DESTROYED",
+      "stampAt": 2.6,
+      "cut": true,
+      "boom": true,
+      "boomAt": 2.6,
+      "say": "Most of the files were shredded. The details of most experiments were lost forever."
+    },
+    {
+      "type": "photo",
+      "dur": 9,
+      "img": "turner.jpg",
+      "focus": [
+        0.5,
+        0.3
+      ],
+      "zoom": [
+        1.0,
+        1.15
+      ],
+      "tag": "AUGUST 1977",
+      "label": {
+        "name": "ADM. STANSFIELD TURNER",
+        "role": "CIA Director · testified to the Senate, 1977"
+      },
+      "say": "But they missed something. In 1977, after a Freedom of Information request, thousands of pages of MKUltra financial records turned up. They had survived because they were filed as money paperwork. That August, the CIA's own director, Stansfield Turner, went before the Senate and confirmed the program."
+    },
+    {
+      "type": "chapter",
+      "dur": 3.5,
+      "n": 6,
+      "label": "FILE",
+      "title": "The Verdict",
+      "boom": true,
+      "min": 3.5
+    },
+    {
+      "type": "verdict",
+      "dur": 8,
+      "bg": "doc2.jpg",
+      "dark": 0.88,
+      "kicker": "Theory: the CIA secretly drugged people with LSD",
+      "stamp": "CONFIRMED",
+      "boom": true,
+      "boomAt": 0.8,
+      "text": "Admitted by the CIA. Investigated by Congress. Compensated by the U.S. government.",
+      "say": "So, did the CIA secretly drug people with LSD to try to control their minds? Confirmed. The agency admitted it, Congress investigated it, and the government paid compensation."
+    },
+    {
+      "type": "verdict",
+      "dur": 9,
+      "bg": "doc1.jpg",
+      "dark": 0.88,
+      "kicker": "Bigger theory: MKUltra achieved mind control",
+      "stamp": "NO EVIDENCE",
+      "boom": true,
+      "boomAt": 0.8,
+      "text": "No proof it ever worked. And the files that could tell us were destroyed.",
+      "say": "But what about the wilder claims, that MKUltra created programmed assassins, or real mind control? There's no evidence it ever worked. And because the files were destroyed, we'll probably never know everything they tried."
+    },
+    {
+      "type": "end",
+      "dur": 6,
+      "bg": "cia.jpg",
+      "dark": 0.82,
+      "subtitle": "The truth, one file at a time.",
+      "say": "So next time someone dismisses something as just a conspiracy theory, remember MKUltra. Subscribe for the next case file."
+    }
+  ]
+}

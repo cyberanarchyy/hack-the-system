@@ -5,7 +5,7 @@ Stretches scene durations so every line fits, and writes:
   out/<name>.timed.json    the story with final scene durations
 usage: python3 voice.py story.json outdir
 """
-import json, os, sys
+import json, os, re, sys
 import numpy as np, soundfile as sf
 from kokoro_onnx import Kokoro
 
@@ -22,7 +22,10 @@ LEAD, TAIL = story.get("lead", LEAD), story.get("tail", TAIL)
 clips, sr = [], 24000
 for sc in story["scenes"]:
     if sc.get("say"):
-        a, sr = k.create(sc["say"], voice=voice, speed=speed, lang="en-us")
+        spoken = sc["say"]
+        for word, sound in story.get("pron", {}).items():   # e.g. {"CIA": "C I A"} - voice only, captions keep the spelling
+            spoken = re.sub(r"\b" + re.escape(word) + r"\b", sound, spoken)
+        a, sr = k.create(spoken, voice=voice, speed=speed, lang="en-us")
         nz = np.where(np.abs(a) > 0.01)[0]          # trim leading/trailing silence
         a = a[max(0, nz[0] - 600): nz[-1] + 1200] if len(nz) else a
     else:

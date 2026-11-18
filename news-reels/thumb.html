@@ -1,13 +1,16 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-*{margin:0;box-sizing:border-box} body{width:1280px;height:720px;overflow:hidden;font-family:"Inter Display","Inter",sans-serif;background:#000}
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="fonts/fonts.css"><style>
+*{margin:0;box-sizing:border-box} body{width:1280px;height:720px;overflow:hidden;background:#0B0B0C}
 #t{position:relative;width:1280px;height:720px;overflow:hidden}
-#bg{position:absolute;inset:0;background-size:cover;background-position:var(--pos,50% 45%);filter:grayscale(.6) contrast(1.25) brightness(.75)}
-#tint{position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,13,24,.92) 0%,rgba(10,13,24,.6) 45%,rgba(10,13,24,0) 75%),radial-gradient(circle at 75% 55%,rgba(255,80,20,.35),transparent 50%)}
-#txt{position:absolute;left:60px;top:70px;width:720px}
-.k{display:inline-block;background:#FF3B3B;color:#fff;font-weight:900;font-size:40px;padding:6px 20px;border-radius:8px;letter-spacing:.02em}
-.big{font-weight:900;font-size:150px;line-height:.95;color:#FFD43B;text-shadow:0 8px 40px rgba(0,0,0,.7);margin-top:18px;letter-spacing:-.02em}
-.sub{font-weight:900;font-size:62px;line-height:1.02;color:#fff;margin-top:18px;text-shadow:0 6px 30px rgba(0,0,0,.8)}
-svg{position:absolute;right:30px;bottom:24px}
-</style></head><body><div id="t"><div id="bg"></div><div id="tint"></div><div id="txt"><div class="k" id="k"></div><div class="big" id="big"></div><div class="sub" id="sub"></div></div>
-<svg width="70" height="78" viewBox="0 0 100 112"><path fill="#FFD43B" d="M50 4 C50 4 90 47 90 70 A40 40 0 0 1 10 70 C10 47 50 4 50 4 Z"/><g fill="none" stroke="#0B0F1E" stroke-width="6" stroke-linecap="round"><circle cx="50" cy="72" r="23"/><ellipse cx="50" cy="72" rx="10" ry="23"/><path d="M27 72 H73"/></g><circle cx="84" cy="20" r="11" fill="#FF3B5C" stroke="#0B0F1E" stroke-width="5"/></svg></div>
-<script>const q=JSON.parse(decodeURIComponent(location.hash.slice(1)));document.getElementById('bg').style.backgroundImage=`url(${q.img})`;if(q.pos)document.getElementById('bg').style.setProperty('--pos',q.pos);for(const k of['k','big','sub'])document.getElementById(k).innerHTML=q[k]||'';</script></body></html>
+#bg{position:absolute;inset:0;background-size:cover;background-position:var(--pos,50% 45%);filter:grayscale(.85) contrast(1.3) brightness(.7) sepia(.15)}
+#tint{position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,11,12,.96) 0%,rgba(11,11,12,.82) 50%,rgba(11,11,12,.1) 80%),radial-gradient(circle at 78% 50%,rgba(224,49,42,.28),transparent 55%)}
+#txt{position:absolute;left:56px;top:60px;width:760px}
+.k{display:inline-block;background:#E0312A;color:#EDE6D3;font:400 36px "Special Elite";padding:6px 18px;letter-spacing:.08em}
+.big{font:700 160px Oswald;line-height:1.02;color:#EDE6D3;margin-top:28px;text-transform:uppercase;text-shadow:0 8px 40px rgba(0,0,0,.7)}
+.big b{background:#E0312A;padding:0 .08em;font-weight:700;display:inline-block;line-height:.98;margin:.04em 0}
+.sub{font:700 60px Oswald;line-height:1.02;color:#EDE6D3;margin-top:16px;text-transform:uppercase;text-shadow:0 6px 30px rgba(0,0,0,.8)}
+.bar{display:inline-block;background:#0B0B0C;height:.8em;vertical-align:-.05em;width:var(--w,4em);outline:4px solid #0B0B0C}
+#stamp{position:absolute;right:56px;bottom:60px;transform:rotate(-10deg);border:8px solid #E0312A;color:#E0312A;font:400 72px "Black Ops One";padding:0 26px;outline:3px solid #E0312A;outline-offset:6px;background:rgba(11,11,12,.35)}
+svg{position:absolute;right:28px;top:24px}
+</style></head><body><div id="t"><div id="bg"></div><div id="tint"></div><div id="txt"><div class="k" id="k"></div><div class="big" id="big"></div><div class="sub" id="sub"></div></div><div id="stamp"></div>
+<svg width="64" height="72" viewBox="0 0 100 112"><path fill="#E0312A" d="M50 4 C50 4 90 47 90 70 A40 40 0 0 1 10 70 C10 47 50 4 50 4 Z"/><rect x="18" y="60" width="64" height="12" fill="#EDE6D3"/><rect x="26" y="78" width="40" height="8" fill="#EDE6D3"/></svg></div>
+<script>const q=JSON.parse(decodeURIComponent(location.hash.slice(1)));document.getElementById('bg').style.backgroundImage=`url(${q.img})`;if(q.pos)document.getElementById('bg').style.setProperty('--pos',q.pos);for(const k of['k','big','sub','stamp'])document.getElementById(k).innerHTML=q[k]||'';if(!q.stamp)document.getElementById('stamp').remove();if(!q.k)document.getElementById('k').remove();</script></body></html>

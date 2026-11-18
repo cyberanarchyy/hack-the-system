@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
+<link rel="stylesheet" href="fonts/fonts.css">
 <style>
   html, body { margin: 0; background: #000; }
   canvas { display: block; width: 540px; height: 960px; }
@@ -14,9 +15,11 @@
 // The story is injected as window.STORY before init() is called.
 const W = 1080, H = 1920;
 const ctx = document.getElementById('c').getContext('2d');
-const FONT = '"Inter Display", "Inter", "Liberation Sans", sans-serif';
-const C = { bg1: '#0B0F1E', bg2: '#1B1040', ink: '#FFFFFF', dim: '#A9B0C8',
-            acc: '#FFD43B', hot: '#FF3B5C', cool: '#3BE3FF', ok: '#3BFF9D' };
+// DAILY DROP "declassified" look: ink black, paper, stamp red; Oswald headlines, Special Elite typewriter
+const FONT = '"Oswald", "Inter Display", "Liberation Sans", sans-serif';
+const TYPE = '"Special Elite", "Courier Prime", monospace';
+const C = { bg1: '#0B0B0C', bg2: '#1C1816', ink: '#F2ECDD', dim: '#A39E92', paper: '#EDE6D3',
+            acc: '#E0312A', hot: '#E0312A', cool: '#EDE6D3', ok: '#EDE6D3' };
 // TikTok safe zone: keep text clear of top bar, right rail and caption area.
 const SAFE = { left: 90, right: W - 170, top: 260, bottom: 1480 };
 
@@ -41,6 +44,7 @@ async function init(s) {
   const g = GRAIN.getContext('2d'), d = g.createImageData(256, 256);
   for (let i = 0; i < d.data.length; i += 4) { const v = rand(i * 0.37 + 1) * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
   g.putImageData(d, 0, 0);
+  for (const f of ['700 80px Oswald', '500 40px Oswald', '400 40px "Special Elite"', '400 40px "Black Ops One"']) await document.fonts.load(f);
   return total;
 }
 
@@ -62,12 +66,13 @@ function kenBurns(sc, im, lt, x = 0, y = 0, w = W, h = H) {
 }
 // Cinematic grade: darken top/bottom for text, brand tint, vignette.
 function grade(strength = 1) {
+  ctx.save(); ctx.globalCompositeOperation = 'saturation'; ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(0, 0, W, H); ctx.restore();
   let g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, `rgba(11,15,30,${0.85 * strength})`); g.addColorStop(0.28, 'rgba(11,15,30,0.15)');
-  g.addColorStop(0.55, 'rgba(11,15,30,0.05)'); g.addColorStop(0.78, `rgba(11,15,30,${0.75 * strength})`);
-  g.addColorStop(1, `rgba(11,15,30,${0.92 * strength})`);
+  g.addColorStop(0, `rgba(11,11,12,${0.85 * strength})`); g.addColorStop(0.28, 'rgba(11,11,12,0.15)');
+  g.addColorStop(0.55, 'rgba(11,11,12,0.05)'); g.addColorStop(0.78, `rgba(11,11,12,${0.75 * strength})`);
+  g.addColorStop(1, `rgba(11,11,12,${0.92 * strength})`);
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.save(); ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = 'rgba(60,40,140,0.35)'; ctx.fillRect(0, 0, W, H); ctx.restore();
+  ctx.save(); ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = 'rgba(120,70,30,0.22)'; ctx.fillRect(0, 0, W, H); ctx.restore();
   const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.75);
   v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.55)');
   ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
@@ -84,18 +89,18 @@ function nameTag(name, role, x, y, lt, d = 0.4, scale = 1) {
   const p = easeOut((lt - d) / 0.35); if (p <= 0) return;
   ctx.save(); ctx.globalAlpha = p;
   ctx.font = `900 ${44 * scale}px ${FONT}`; const nw = ctx.measureText(name).width;
-  ctx.font = `700 ${30 * scale}px ${FONT}`; const rw = role ? ctx.measureText(role).width : 0;
+  ctx.font = `400 ${30 * scale}px ${TYPE}`; const rw = role ? ctx.measureText(role).width : 0;
   const w = Math.max(nw, rw) + 48 * scale;
   ctx.fillStyle = C.acc; ctx.fillRect(x, y, 10 * scale, (role ? 104 : 66) * scale);
-  ctx.fillStyle = 'rgba(11,15,30,0.82)'; ctx.fillRect(x + 10 * scale, y, (w) * p, (role ? 104 : 66) * scale);
+  ctx.fillStyle = 'rgba(11,11,12,0.82)'; ctx.fillRect(x + 10 * scale, y, (w) * p, (role ? 104 : 66) * scale);
   ctx.beginPath(); ctx.rect(x, y, w + 10 * scale, 110 * scale); ctx.clip();
   ctx.fillStyle = '#fff'; ctx.font = `900 ${44 * scale}px ${FONT}`; ctx.fillText(name, x + 32 * scale, y + 50 * scale);
-  if (role) { ctx.fillStyle = C.acc; ctx.font = `700 ${30 * scale}px ${FONT}`; ctx.fillText(role, x + 32 * scale, y + 88 * scale); }
+  if (role) { ctx.fillStyle = C.paper; ctx.font = `400 ${30 * scale}px ${TYPE}`; ctx.fillText(role, x + 32 * scale, y + 88 * scale); }
   ctx.restore();
 }
 function credit(text) {
   if (!text) return;
-  ctx.save(); ctx.font = `600 22px ${FONT}`; ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.save(); ctx.font = `400 22px ${TYPE}`; ctx.fillStyle = 'rgba(237,230,211,0.55)';
   ctx.translate(W - 40, 1500); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'left';
   ctx.fillText('PHOTO: ' + text.toUpperCase(), 0, 0); ctx.restore();
 }
@@ -151,7 +156,7 @@ function words(text) {
   const out = []; let hi = false;
   for (const part of text.split(/(\*)/)) {
     if (part === '*') { hi = !hi; continue; }
-    for (const w of part.split(/\s+/)) if (w) out.push({ w, hi });
+    for (const w of part.split(/\s+/)) { if (!w) continue; if (/^[.,!?;:]+$/.test(w) && out.length) out[out.length - 1].w += w; else out.push({ w, hi }); }
   }
   return out;
 }
@@ -196,7 +201,7 @@ function drawText(text, opts, lt) {
           const pad = size * 0.12;
           roundRect(wx - pad, wy - size * 0.86, wd.width + pad * 2, size * 1.08, size * 0.14);
           ctx.fill();
-          ctx.fillStyle = '#0B0F1E';
+          ctx.fillStyle = C.paper;
         } else {
           ctx.fillStyle = wd.hi ? hiColor : color;
         }
@@ -220,53 +225,40 @@ function roundRect(x, y, w, h, r) {
 // ---------- background ----------
 function background(t) {
   const g = ctx.createLinearGradient(0, 0, W, H);
-  const hue = Math.sin(t * 0.4) * 0.5 + 0.5;
-  g.addColorStop(0, C.bg1);
-  g.addColorStop(1, `rgb(${27 + hue * 30},${16 + hue * 6},${64 + hue * 20})`);
+  g.addColorStop(0, C.bg1); g.addColorStop(1, C.bg2);
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  // drifting glow blobs
-  for (let k = 0; k < 3; k++) {
-    const bx = W * (0.2 + 0.6 * rand(k + 1)) + Math.sin(t * 0.5 + k * 2) * 160;
-    const by = H * (0.2 + 0.6 * rand(k + 7)) + Math.cos(t * 0.4 + k) * 220;
-    const rg = ctx.createRadialGradient(bx, by, 0, bx, by, 620);
-    const col = [C.hot, C.cool, C.acc][k];
-    rg.addColorStop(0, col + '33'); rg.addColorStop(1, col + '00');
-    ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
-  }
-  // grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 2;
-  const off = (t * 40) % 120;
-  for (let y = -120 + off; y < H; y += 120) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
-  for (let x = 0; x < W; x += 120) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  const bx = W * 0.75 + Math.sin(t * 0.4) * 120, by = H * 0.3 + Math.cos(t * 0.3) * 200;
+  const rg = ctx.createRadialGradient(bx, by, 0, bx, by, 900);
+  rg.addColorStop(0, 'rgba(224,49,42,0.16)'); rg.addColorStop(1, 'rgba(224,49,42,0)');
+  ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+  // faint ruled lines like a file card
+  ctx.strokeStyle = 'rgba(237,230,211,0.035)'; ctx.lineWidth = 2;
+  const off = (t * 30) % 72;
+  for (let y = -72 + off; y < H; y += 72) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(224,49,42,0.12)'; ctx.beginPath(); ctx.moveTo(60, 0); ctx.lineTo(60, H); ctx.stroke();
 }
 
 function chrome(t) {
   // progress bar
-  ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillRect(0, 0, W, 10);
+  ctx.fillStyle = 'rgba(237,230,211,0.15)'; ctx.fillRect(0, 0, W, 10);
   ctx.fillStyle = C.acc; ctx.fillRect(0, 0, W * clamp(t / total), 10);
-  // brand pill
-  ctx.font = `900 34px ${FONT}`;
-  const label = story.brand || 'DAILY DROP';
-  const bw = ctx.measureText(label).width + 104;
-  ctx.fillStyle = C.hot; roundRect(SAFE.left, 150, bw, 64, 32); ctx.fill();
-  ctx.fillStyle = C.bg1; ctx.beginPath(); ctx.arc(SAFE.left + 32, 182, 27, 0, 7); ctx.fill();
-  dropMark(SAFE.left + 12, 152, 40, t);
-  ctx.fillStyle = '#fff'; ctx.font = `900 34px ${FONT}`;
-  ctx.fillText(label, SAFE.left + 72, 194);
-  ctx.font = `700 30px ${FONT}`; ctx.fillStyle = C.dim;
-  ctx.fillText(story.date || '', SAFE.left + bw + 24, 193);
+  // brand label: [mark] DAILY [DROP]
+  const x = SAFE.left, y = 150;
+  dropMark(x, y + 2, 52, t);
+  ctx.font = `700 40px ${FONT}`; ctx.fillStyle = C.ink; ctx.fillText('DAILY', x + 68, y + 46);
+  const dw = ctx.measureText('DAILY ').width, pw = ctx.measureText('DROP').width + 16;
+  ctx.fillStyle = C.acc; ctx.fillRect(x + 68 + dw, y + 6, pw, 50);
+  ctx.fillStyle = C.paper; ctx.fillText('DROP', x + 76 + dw, y + 46);
+  ctx.font = `400 28px ${TYPE}`; ctx.fillStyle = C.dim;
+  ctx.fillText((story.date || '').toUpperCase(), x + 68 + dw + pw + 22, y + 44);
 }
 
-// Channel logo: yellow drop with a globe + red live dot (same as brand/brand.html)
+// Channel mark: red drop with two paper redaction bars (same as brand/brand.html)
 const DROP = new Path2D('M50 4 C50 4 90 47 90 70 A40 40 0 0 1 10 70 C10 47 50 4 50 4 Z');
-function dropMark(x, y, size, t) {
+function dropMark(x, y, size, t, drop = C.acc, bars = C.paper) {
   ctx.save(); ctx.translate(x, y); ctx.scale(size / 100, size / 100);
-  ctx.fillStyle = C.acc; ctx.fill(DROP);
-  ctx.strokeStyle = C.bg1; ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(50, 72, 23, 0, 7); ctx.stroke();
-  ctx.beginPath(); ctx.ellipse(50, 72, 10, 23, 0, 0, 7); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(27, 72); ctx.lineTo(73, 72); ctx.stroke();
-  ctx.globalAlpha = 0.6 + 0.4 * Math.abs(Math.sin(t * 4));
-  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(84, 20, 12, 0, 7); ctx.fill();
+  ctx.fillStyle = drop; ctx.fill(DROP);
+  ctx.fillStyle = bars; ctx.fillRect(18, 60, 64, 12); ctx.fillRect(26, 78, 40, 8);
   ctx.restore();
 }
 
@@ -371,7 +363,7 @@ const SCENES = {
     drawText(sc.text, { y: 1110, size: 64, weight: 700, delay: 0.6, stagger: 0.045, color: C.ink }, lt);
   },
   list(sc, lt) {
-    if (sc.bg) { kenBurns(sc, IMG[sc.bg], lt); ctx.fillStyle = 'rgba(11,15,30,0.62)'; ctx.fillRect(0, 0, W, H); grade(1); }
+    if (sc.bg) { kenBurns(sc, IMG[sc.bg], lt); ctx.fillStyle = 'rgba(11,11,12,0.62)'; ctx.fillRect(0, 0, W, H); grade(1); }
     let y = drawText(sc.title, { y: 360, size: 84, delay: 0, stagger: 0.05 }, lt) + 50;
     const n = sc.items.length, step = Math.min(1.0, (sc.dur - 1.6) / n);
     sc.items.forEach((it, i) => {
@@ -383,7 +375,7 @@ const SCENES = {
       ctx.fillStyle = 'rgba(255,255,255,0.08)'; roundRect(SAFE.left, y, SAFE.right - SAFE.left, bh, 30); ctx.fill();
       const mx = SAFE.left + 75, my = y + bh / 2;
       ctx.fillStyle = sc.mark === 'x' ? C.hot : sc.mark === 'dot' ? C.acc : C.ok; ctx.beginPath(); ctx.arc(mx, my, sc.mark === 'dot' ? 22 : 44, 0, 7); ctx.fill();
-      ctx.strokeStyle = '#0B0F1E'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.beginPath();
+      ctx.strokeStyle = C.bg1; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.beginPath();
       const q = clamp((lt - d - 0.15) / 0.25);
       if (sc.mark === 'dot') {
       } else if (sc.mark === 'x') {
@@ -407,7 +399,7 @@ const SCENES = {
       const s = 2.6 - 1.6 * easeIn(p) ;
       ctx.save(); ctx.translate(W / 2 - 40, 900); ctx.rotate(-0.12); ctx.scale(s, s);
       ctx.globalAlpha = clamp(p * 1.5);
-      ctx.font = `900 ${fitSize(sc.stamp, 130, 700)}px ${FONT}`; const tw = ctx.measureText(sc.stamp).width;
+      ctx.font = `400 ${fitSize(sc.stamp, 130, 700, 400)}px "Black Ops One"`; const tw = ctx.measureText(sc.stamp).width;
       ctx.strokeStyle = C.hot; ctx.lineWidth = 14; roundRect(-tw / 2 - 40, -110, tw + 80, 160, 20); ctx.stroke();
       ctx.fillStyle = C.hot; ctx.textAlign = 'center'; ctx.fillText(sc.stamp, 0, 20);
       ctx.restore();
@@ -448,7 +440,7 @@ const SCENES = {
     credit(sc.credit);
   },
   cta(sc, lt) {
-    if (sc.bg) { kenBurns(sc, IMG[sc.bg], lt); ctx.fillStyle = 'rgba(11,15,30,0.55)'; ctx.fillRect(0, 0, W, H); grade(1); }
+    if (sc.bg) { kenBurns(sc, IMG[sc.bg], lt); ctx.fillStyle = 'rgba(11,11,12,0.55)'; ctx.fillRect(0, 0, W, H); grade(1); }
     drawText(sc.text, { y: 420, size: 108, delay: 0, stagger: 0.08 }, lt);
     // comment bubble
     const p = backOut((lt - 1.2) / 0.4);
@@ -456,7 +448,7 @@ const SCENES = {
       ctx.save(); ctx.translate(W / 2 - 40, 1060); ctx.scale(p, p);
       ctx.fillStyle = '#fff'; roundRect(-330, -80, 660, 160, 80); ctx.fill();
       ctx.beginPath(); ctx.moveTo(-180, 70); ctx.lineTo(-230, 140); ctx.lineTo(-110, 76); ctx.fill();
-      ctx.fillStyle = '#0B0F1E'; ctx.font = `800 52px ${FONT}`; ctx.textAlign = 'center';
+      ctx.fillStyle = C.bg1; ctx.font = `400 46px ${TYPE}`; ctx.textAlign = 'center';
       ctx.fillText(sc.sub, 0, 18);
       ctx.restore();
     }
@@ -475,11 +467,11 @@ const SCENES = {
 function kicker(label, y, lt, col) {
   if (!label) return;
   const p = easeOut(lt / 0.3);
-  ctx.font = `900 46px ${FONT}`;
-  const w = ctx.measureText(label).width + 50;
+  ctx.font = `400 40px ${TYPE}`;
+  const w = ctx.measureText(label).width + 44;
   ctx.save(); ctx.globalAlpha = p;
-  ctx.fillStyle = col; ctx.fillRect(SAFE.left, y, w * p, 72);
-  ctx.fillStyle = '#0B0F1E'; ctx.fillText(label, SAFE.left + 25, y + 52);
+  ctx.fillStyle = col; ctx.fillRect(SAFE.left, y, w * p, 64);
+  ctx.fillStyle = col === C.hot ? C.paper : C.bg1; ctx.fillText(label, SAFE.left + 22, y + 46);
   ctx.restore();
 }
 
