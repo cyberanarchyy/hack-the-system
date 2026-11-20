@@ -8,3 +8,6 @@ build/
 hts_*.txt
 .wrangler/
 node_modules/
+
+# Downloaded TTS model weights (too large for GitHub)
+news-reels/models/
