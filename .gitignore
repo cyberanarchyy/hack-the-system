@@ -8,3 +8,6 @@ build/
 hts_*.txt
 .wrangler/
 node_modules/
+
+# Local voice-model files (too large for GitHub)
+news-reels/models/
